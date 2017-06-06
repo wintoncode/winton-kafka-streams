@@ -3,8 +3,7 @@ Base definitions for all processors
 
 """
 
-from .. import state
-
+import default_context
 
 class Processor(object):
     """
@@ -15,15 +14,15 @@ class Processor(object):
         self.transform = transform
         self.downstream = []
 
-        self.state = state if state else state.simple.SimpleState
+        self.context = default_context.DefaultContext()
 
     def process(self, **inputs):
         v = self.transform(**inputs)
-        self.state.add_result(v)
+        self.context.state.add_result(v)
 
     def punctuate(self):
-        if self.state.has_data():
-            for data in self.state: # need to implement iterable protocol on state
+        if self.context.state.has_data():
+            for data in self.context.state: # need to implement iterable protocol on state
                 for next_node in self.downstream:
                     next_node.process(self, data)
 
@@ -37,7 +36,7 @@ class SourceProcessor(Processor):
         super()
 
     def process(self, **inputs):
-        self.state.add_result(**inputs)
+        self.context.state.add_result(**inputs)
         self.punctuate()
 
 class SinkProcessor(Processor):
@@ -52,3 +51,7 @@ class SinkProcessor(Processor):
 
     def process(self, **inputs):
         self.punctuate()
+
+    def punctuate(self):
+        if self.context.state.has_data():
+

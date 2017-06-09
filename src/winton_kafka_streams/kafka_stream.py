@@ -41,7 +41,9 @@ class KafkaStream(object):
         running = True
         while running:
             msg = self.consumer.poll()
-            if not msg.error():
+            if msg is None:
+                continue
+            elif not msg.error():
                 print('Received message: %s' % msg.value().decode('utf-8'))
             elif msg.error().code() != kafka.KafkaError._PARTITION_EOF:
                 print(msg.error())

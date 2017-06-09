@@ -4,17 +4,26 @@ Abstract classes for implementations of state classes
 """
 
 import abc
+import collections.abc
 
-class StateBase(metaclass=abc.ABCMeta):
+class StoreBase(collections.abc.Iterator):
     """
     Interface that must be implemented by all state classes
 
     """
 
     @abc.abstractmethod
-    def add_result(self, v):
+    def add(self, v):
         pass
 
     @abc.abstractmethod
-    def has_data(self):
+    def empty(self):
+        pass
+
+    @abc.abstractmethod
+    def clear(self):
+        pass
+
+    @abc.abstractmethod
+    def __iter__(self):
         pass

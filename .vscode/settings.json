@@ -1,0 +1,5 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "python.pythonPath": "C:/Anaconda2/envs/winton-kafka/python",
+    "python.linting.pylintPath": "C:\\Anaconda2\\envs\\winton-kafka\\Scripts\\pylint.exe"
+}

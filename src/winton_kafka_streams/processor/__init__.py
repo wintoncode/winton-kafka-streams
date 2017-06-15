@@ -9,5 +9,8 @@ from .processor_context import ProcessorContext
 
 from ._stream_thread import start_consumer
 
+from .record import KafkaRecord
+
 # time extractors
 from .wallclock_timestamp import WallClockTimeStampExtractor
+from .extract_timestamp import RecordTimeStampExtractor

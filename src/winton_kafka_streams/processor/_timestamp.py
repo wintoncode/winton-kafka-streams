@@ -5,7 +5,7 @@ Base class for all timestamp extractors
 
 import abc
 
-class TimeStampExtractor(object):
+class TimeStampExtractor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def extract(self, value):
+    def extract(self, record, previous_timestamp):
         pass

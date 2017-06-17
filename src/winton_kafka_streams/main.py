@@ -43,7 +43,7 @@ class DoubleProcessor(BaseProcessor):
 
 
 def _debug_run():
-    double_store = SimpleStore()
+    double_store = SimpleStore('simple-store')
     context = ProcessorContext()
     context.add_store('prices', double_store)
 
@@ -56,9 +56,9 @@ def _debug_run():
     context.currentNode = src
 
     # TODO: Nodes not initialised correctly
-    src.initialise('prices', context)
-    proc_double.initialise('prices', context)
-    result.initialise('prices', context)
+    src.initialise(context)
+    proc_double.initialise(context)
+    result.initialise(context)
 
     #topology.pprint(sys.stdout)
 

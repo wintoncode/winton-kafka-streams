@@ -13,8 +13,8 @@ class ProcessorNode(object):
         self.processor = _processor
         self.children = []
 
-    def initialise(self, _name, _context):
-        self.processor.initialise(_name, _context)
+    def initialise(self, _context):
+        self.processor.initialise(self.name, _context)
 
     def process(self, key, value):
         self.processor.process(key, value)
@@ -25,6 +25,9 @@ class ProcessorNode(object):
     def __repr__(self):
         return self.__class__.__name__ + f"({self.processor.__class__}({self.name}))"
 
+    def add_store(self, store):
+        self.processor.context.add_store(store.name, store)
+
 
 class TopologyBuilder(object):
     """
@@ -32,6 +35,7 @@ class TopologyBuilder(object):
     """
     def __init__(self):
         self.nodes = {}
+        self.state_stores = {}
 
     def _add_node(self, name, processor, inputs=[]):
         if name in self.nodes:
@@ -64,7 +68,7 @@ class TopologyBuilder(object):
             * If store is None
             * If store already exists
         """
-        if not store:
+        if store is None:
             raise KafkaStreamsError("Store cannot be None")
 
         if store.name in self.state_stores:
@@ -72,7 +76,7 @@ class TopologyBuilder(object):
         self.state_stores[store.name] = store
 
         for procesor_name in args:
-            self.connect_processor_to_store(procesor_name, store_name)
+            self.connect_processor_to_store(procesor_name, store.name)
 
 
     def connect_processor_to_store(self, processor_name, *args):
@@ -96,13 +100,15 @@ class TopologyBuilder(object):
             raise KafkaStreamsError("Processor name cannot be empty")
 
         processor_node = self.nodes.get(processor_name)
-        if processor_node is None or isinstance(processor_node.__class__, (SourceProcessor, SinkProcessor)):
+        if processor_node is None:
+            raise KafkaStreamsError(f"Unrecognised processor name {processor_name} passed to connect state store")
+        if isinstance(processor_node.processor, (SourceProcessor, SinkProcessor)):
             raise KafkaStreamsError(f"{processor_node.__class__.__name__} type cannot have a state store attached")
 
         for store_name in args:
             if store_name not in self.state_stores:
                 raise KafkaStreamsError(f"Unknown store {store_name} being added to {processor_name}")
-            processor_node.add_state_store(store)
+            processor_node.add_store(self.state_stores[store_name])
 
     def source(self, name, topics):
         processor_node = ProcessorNode(name, SourceProcessor(topics))

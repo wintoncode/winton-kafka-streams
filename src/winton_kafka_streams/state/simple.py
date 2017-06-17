@@ -1,7 +1,7 @@
 """
-Simple state implementation. 
+Simple state implementation.
 
-Not intended for anything other than development and debugging. 
+Not intended for anything other than development and debugging.
 
 """
 
@@ -13,7 +13,8 @@ class SimpleStore(StoreBase):
     """
     State class that holds all transform calculations in a simple array
     """
-    def __init__(self):
+    def __init__(self, _name):
+        super().__init__(_name)
         self.values = queue.Queue()
 
     def add(self, key, value):

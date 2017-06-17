@@ -12,6 +12,9 @@ class StoreBase(collections.abc.Iterator):
 
     """
 
+    def __init__(self, _name):
+        self.name = _name
+
     @abc.abstractmethod
     def add(self, v):
         pass

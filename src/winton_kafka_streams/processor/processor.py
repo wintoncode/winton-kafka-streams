@@ -11,8 +11,8 @@ class BaseProcessor(object):
     def __init__(self):
         super().__init__()
 
-        self._name = None
-        self._context = None
+        self.name = None
+        self.context = None
 
     def initialise(self, _name, _context):
         self.name = _name

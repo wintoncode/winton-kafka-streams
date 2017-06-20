@@ -7,7 +7,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-class BaseProcessor(object):
+class BaseProcessor:
     def __init__(self):
         super().__init__()
 

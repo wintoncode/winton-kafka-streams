@@ -2,21 +2,22 @@
 Default context passed to every processor
 
 """
+import logging
 
 from . import _context
+
+log = logging.getLogger(__name__)
 
 class ProcessorContext(_context.Context):
     def __init__(self):
         super().__init__()
 
-    def send(self, topic, key, obj):
+    def send(self, topic, key, value):
         """
         Send the key value-pair to a Kafka topic
 
         """
-
-        print(f"Send {str(obj)} to topic '{topic}'")
-        pass
+        log.debug(f"Send (%s, %s) to topic %s", key, value, topic)
 
     def schedule(self, timestamp):
         """

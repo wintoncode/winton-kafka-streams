@@ -5,7 +5,7 @@ Processor context is the link to kafka from individual processor objects
 
 from .._error import KafkaStreamsError
 
-class Context(object):
+class Context:
     """
     Processor context object
 

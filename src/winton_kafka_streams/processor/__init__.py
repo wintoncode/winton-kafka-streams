@@ -7,7 +7,7 @@ from .topology import TopologyBuilder
 from .processor import BaseProcessor, SourceProcessor, SinkProcessor
 from .processor_context import ProcessorContext
 
-from ._stream_thread import start_consumer
+from ._stream_thread import StreamThread
 
 from .record import KafkaRecord
 

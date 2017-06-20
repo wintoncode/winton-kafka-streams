@@ -5,46 +5,86 @@ TODO: Definitely very rough and ready!
 
 """
 
+import queue
+import logging
+import itertools
 import threading
 
 from confluent_kafka import Consumer, KafkaError
 
+log = logging.getLogger(__name__)
 
-class KafkaConsumerThread(threading.Thread):
-    #daemon = True
+class StreamTask:
+    def __init__(self, task_id, application_id, partitions, topology, consumer):
+        self.task_id = task_id
+        self.application_id = application_id
+        self.partitions = partitions
+        self.topology = topology
+        self.consumer = consumer
+        self.queue = queue.Queue()
 
-    def __init__(self, _topics, _context, _src):
+    def add_records(self, partition, records):
+        for record in records:
+            self.queue.put(record)
+
+    def process(self):
+        if self.queue.empty():
+            return False
+
+        record = self.queue.get()
+
+        self.topology.sources[0].process(record.key(), record.value())
+
+class StreamThread:
+    def __init__(self, _topology, _config):
         super().__init__()
+        self.topology = _topology
+        self.config = _config
 
-        self.topics = _topics
-        self.context = _context
+        self._running = True
 
-        self.src = _src # TODO: DEBUG - not correct way to pass source processor
+        self.topics = list(itertools.chain.from_iterable([src.processor.topic for src in self.topology.sources]))
 
-        self.consumer = Consumer({'bootstrap.servers': 'localhost', 'group.id': 'testroup',
+        log.info('Topics for consumer are: %s', self.topics)
+        # TODO: read values from config
+        self.consumer = Consumer({'bootstrap.servers': 'localhost', 'group.id': 'testgroup',
                     'default.topic.config': {'auto.offset.reset': 'smallest'}})
         self.consumer.subscribe(self.topics)
 
+        self.thread = threading.Thread(target=self.run)#, daemon=True)
+
+    def start(self):
+        self.thread.start()
+
     def run(self):
-        while True:
-            msg = self.consumer.poll()
-            if not msg.error():
-                print('Received message: %s' % msg.value().decode('utf-8'))
-                try:
-                    self.src.process("", float(msg.value().decode('utf-8')))
-                except ValueError as ve:
-                    print(str(ve))
-                    return # DEBUG: easy way to break out
-            elif msg.error().code() == KafkaError._PARTITION_EOF:
+        log.debug('Running stream thread...')
+
+        self.consumer.subscribe(self.topics, on_assign=self.on_assign, on_revoke=self.on_revoke)
+
+        while self._running:
+            record = self.consumer.poll()
+            if not record.error():
+                log.debug('Received message: %s', record.value().decode('utf-8'))
+                self.tasks[0].add_records(None, [record])
+                while self.tasks[0].process():
+                    pass
+            elif record.error().code() == KafkaError._PARTITION_EOF:
+                log.debug('Partition EOF')
                 continue
-            elif msg.error():
-                print(msg.error())
+            elif record.error():
+                log.error('Record error received: %s', record.error())
+
+        log.debug('Ending stream thread...')
+
+    def on_assign(self, consumer, partitions):
+        log.debug('Assigning partitions %s', partitions)
+        self.tasks = [StreamTask(self.config.TASK_ID, self.config.APPLICATION_ID, partitions, self.topology, consumer)]
+
+    def on_revoke(self, consumer, partitions):
+        log.debug('Revoking partitions %s', partitions)
+        self.tasks = []
 
     def close(self):
+        log.debug('Closing stream thread and consumer')
+        self.running = False
         self.consumer.close()
-
-def start_consumer(topics, context, src):
-    kct = KafkaConsumerThread(topics, context, src)
-    kct.start()
-
-    return kct

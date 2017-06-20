@@ -35,7 +35,7 @@ class SimpleStore(StoreBase):
         self.values = queue.Queue()
 
     def __iter__(self):
-        class _IterSimpleStore(object):
+        class _IterSimpleStore:
             def __init__(self, _simple_store):
                 self.store = _simple_store
             def __iter__(self):

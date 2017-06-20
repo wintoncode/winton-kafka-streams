@@ -7,7 +7,7 @@ from .processor import SourceProcessor, SinkProcessor
 from .._error import KafkaStreamsError
 
 
-class ProcessorNode(object):
+class ProcessorNode:
     def __init__(self, _name, _processor):
         self.name = _name
         self.processor = _processor
@@ -29,13 +29,16 @@ class ProcessorNode(object):
         self.processor.context.add_store(store.name, store)
 
 
-class TopologyBuilder(object):
+class TopologyBuilder:
     """
     Convenience class for building a graph topology
     """
     def __init__(self):
         self.nodes = {}
         self.state_stores = {}
+
+        self._sources = []
+        self._sinks = []
 
     def _add_node(self, name, processor, inputs=[]):
         if name in self.nodes:
@@ -52,6 +55,14 @@ class TopologyBuilder(object):
 
         for i in inputs:
             self.nodes[i].children.append(processor)
+
+    @property
+    def sources(self):
+        return self._sources
+
+    @property
+    def sinks(self):
+        return sefl._sinks
 
     def add_state_store(self, store, *args):
         """
@@ -113,6 +124,7 @@ class TopologyBuilder(object):
     def source(self, name, topics):
         processor_node = ProcessorNode(name, SourceProcessor(topics))
         self._add_node(name, processor_node, [])
+        self._sources.append(processor_node)
         return processor_node
 
     def processor(self, name, processor, *inputs):
@@ -145,6 +157,7 @@ class TopologyBuilder(object):
     def sink(self, name, topic, *inputs):
         processor_node = ProcessorNode(name, SinkProcessor(topic))
         self._add_node(name, processor_node, inputs)
+        self._sinks.append(processor_node)
         return processor_node
 
     def pprint(self, out):

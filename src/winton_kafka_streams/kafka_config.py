@@ -3,6 +3,10 @@ Configuration of Apache Kafka
 
 """
 
+import os
+
+from ._error import KafkaStreamsError
+
 # Required options
 
 """
@@ -20,10 +24,17 @@ It is used as:
     3) the changelog topic prefix.
 
 """
-APLICATION_ID = "application.id"
+APPLICATION_ID = "wkstream.application.id"
+
+TASK_ID = "wkstream.task.id"
 
 # Common options for configuration
 
 
 # Etc.
 
+
+
+def read_local_config(config_file):
+    if config_file is not None:
+        cfmod = __import__(config_file, globals(), locals(), ['*'])

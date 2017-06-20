@@ -1,7 +1,7 @@
 """
 """
 
-class KafkaRecord(object):
+class KafkaRecord:
     """
     A record from Kafka
     """

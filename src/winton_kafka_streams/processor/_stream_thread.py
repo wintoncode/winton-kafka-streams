@@ -78,7 +78,8 @@ class StreamThread:
 
     def on_assign(self, consumer, partitions):
         log.debug('Assigning partitions %s', partitions)
-        self.tasks = [StreamTask(self.config.TASK_ID, self.config.APPLICATION_ID, partitions, self.topology, consumer)]
+        # TODO: task_id == 0 is not correct, fix
+        self.tasks = [StreamTask(0, self.config.APPLICATION_ID, partitions, self.topology, consumer)]
 
     def on_revoke(self, consumer, partitions):
         log.debug('Revoking partitions %s', partitions)

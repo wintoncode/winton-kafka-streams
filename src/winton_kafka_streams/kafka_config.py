@@ -4,13 +4,20 @@ Configuration of Apache Kafka
 """
 
 import os
+import sys
+import logging
+
+import javaproperties
 
 from ._error import KafkaStreamsError
 
-# Required options
+log = logging.getLogger(__name__)
+
+#### - Required options - ####
 
 """
-The kafka server(s) from which sink/source processors will be connected
+A list of host/port pairs to use for establishing the
+initial connection to the Kafka cluster
 
 """
 BOOTSTRAP_SERVERS = "localhost:9092"
@@ -26,15 +33,210 @@ It is used as:
 """
 APPLICATION_ID = "wkstream.application.id"
 
-TASK_ID = "wkstream.task.id"
-
-# Common options for configuration
 
 
-# Etc.
 
+#### - Optional Options - ####
+
+"""
+The replication factor for changelog topics and repartition topics created by the application
+Default: 1
+Importance: Low
+"""
+REPLICATION_FACTOR = 1
+
+"""
+Directory location for state stores
+Default: /var/lib/kafka-streams
+Importance: Low
+"""
+STATE_DIR = "/var/lib/kafka-streams"
+
+"""
+Maximum number of memory bytes to be used for record caches across all threads
+Default: 10485760 (bytes)
+Importance: Medium
+"""
+CACHE_MAX_BYTES_BUFFERING = 10485760
+
+"""
+Default serializer/deserializer class for record keys, implements the Serde interface (see also value.serde)
+Default: Serdes.ByteArray().getClass().getName()
+Importance: Medium
+"""
+KEY_SERDE = None # TODO
+
+"""
+The number of standby replicas for each task
+Default: 0
+Importance: Medium
+"""
+NUM_STANDBY_REPLICAS = 0
+
+"""
+The number of threads to execute stream processing
+Defulat: 1
+Importance: Medium
+"""
+NUM_STREAM_THREADS = 1
+
+"""
+Timestamp extractor class that implements the TimestampExtractor interface
+Default: see Timestamp Extractor
+Importance: Medium
+"""
+TIMESTAMP_EXTRACTOR = None # TODO
+
+"""
+Default serializer/deserializer class for record values, implements the Serde interface (see also key.serde)
+Default: Serdes.ByteArray().getClass().getName()
+Importance: Medium
+"""
+VALUE_SERDE = None # TODO
+
+"""
+A host:port pair pointing to an embedded user defined endpoint that can be used for discovering the locations of state stores within a single Kafka Streams application. The value of this must be different for each instance of the application.
+Default ""
+Importance: Low
+"""
+APPLICATION_SERVER = ""
+
+"""
+The maximum number of records to buffer per partition
+Default: 1000
+Importance: Low
+"""
+BUFFERED_RECORDS_PER_PARTITION = 1000
+
+"""
+An id string to pass to the server when making requests. (This setting is passed to the consumer/producer clients used internally by Kafka Streams.)
+Default: ""
+Importance: Low
+"""
+CLIENT_ID = ""
+
+"""
+The frequency with which to save the position (offsets in source topics) of tasks
+Default: 30000 (millisecs)
+Importance: Low
+"""
+COMMIT_INTERVAL_MS = 30_000
+
+"""
+A list of classes to use as metrics reporters
+Default: []
+Importance: Low
+"""
+METRIC_REPORTERS = []
+
+"""
+The number of samples maintained to compute metrics.
+Default: 2
+Importance: Low
+"""
+METRICS_NUM_SAMPLES = 2
+
+"""
+The highest recording level for metrics.
+Default: info
+Importance: Low
+"""
+METRICS_RECORDING_LEVEL = 'info'
+
+"""
+The window of time a metrics sample is computed over.
+Default: 30000 (millisecs)
+Importance: Low
+"""
+METRICS_SAMPLE_WINDOW_MS = 30_000
+
+"""
+Partition grouper class that implements the PartitionGrouper interface
+Defatult: see Partition Grouper
+Importance: Low
+"""
+PARITION_GROUPER = None # DEBUG
+
+"""
+The amount of time in milliseconds to block waiting for input
+Default: 100 (millisecs)
+Importance: Low
+"""
+POLL_MS = 100
+
+"""
+The amount of time in milliseconds to wait before deleting state when a partition has migrated
+Default: 60000 (millisecs)
+Importance: Low
+"""
+STATE_CLEANUP_DELAY_MS = 60_000
+
+"""
+Added to a windows maintainMs to ensure data is not deleted from the log prematurely. Allows for clock drift.
+Default: 86400000 (millisecons) = 1 day
+Importance: Low
+"""
+WINDOWSTORE_CHANGELOG_ADDITINOAL_RETENTION_MS = 86_000_000
+
+
+
+
+#### - Non streams configuration parameters - ####
+
+"""
+linger.ms (low)	Producer
+Default: 100
+Importance: low
+"""
+LINGER_MS = 100
+
+"""
+Producer
+Default: 10
+Importance: low
+"""
+RETRIES = 10
+
+"""
+Consumer
+Default: earliest
+Importance: low
+"""
+AUTO_OFFSET_RESET = 'earliest'
+
+"""
+Consumer
+Default: false, see Consumer Auto Commit
+Importance: low
+"""
+ENABLE_AUTO_COMMIT = False
+
+"""
+Consumer
+Default: Integer.MAX_VALUE
+Importance: low
+"""
+MAX_POLL_INTERVAL_MS = sys.maxsize # TODO: No max for Python, this is word size - is that correct for Java?
+
+"""
+Consumer
+Default: 1000
+Importance: low
+"""
+MAX_POLL_RECORDS = 1000
 
 
 def read_local_config(config_file):
-    if config_file is not None:
-        cfmod = __import__(config_file, globals(), locals(), ['*'])
+    if not os.path.exists(config_file):
+        raise KafkaStreamsError(f'Config file {config_file} does not exist')
+
+    with open(config_file, 'r') as cf:
+        props = javaproperties.load(cf)
+
+    for k, v in props.items():
+        ku = k.upper().replace('.', '_')
+        if ku not in globals().keys():
+            raise KafkaStreamsError(f'Unrecognised property {k} read from config file {config_file}')
+        globals()[ku] = v
+
+        log.debug('Config: %s = %s', k, v)

@@ -23,7 +23,7 @@ class DoubleProcessor(BaseProcessor):
 
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
-        self.store = self.context.get_store("prices")
+        self.store = self.context.get_store("simple-store")
 
         self.context.schedule(1000)
 
@@ -51,20 +51,12 @@ def _debug_run(config_file):
 
     double_store = SimpleStore('simple-store')
     context = ProcessorContext()
-    context.add_store('prices', double_store)
+    # context.add_store('prices', double_store)
 
     topology = TopologyBuilder()
-    src = topology.source('prices', 'price')
-    proc_double = topology.processor('double', DoubleProcessor('double', context), 'prices')
+    src = topology.source('prices', ['price'])
+    proc_double = topology.processor('double', DoubleProcessor('double', context), 'prices', stores=[double_store])
     result = topology.sink('result', 'priceX2', 'double')
-
-    # TODO: This is out of place - we can have other context too
-    context.currentNode = src
-
-    # TODO: Nodes not initialised correctly
-    src.initialise(context)
-    proc_double.initialise(context)
-    result.initialise(context)
 
     #topology.pprint(sys.stdout)
 

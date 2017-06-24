@@ -169,27 +169,3 @@ class TopologyBuilder:
         self._add_node(name, processor_node, parents)
         self._sinks[topic] = processor_node
         return processor_node
-
-    def pprint(self, out):
-        """
-        Pretty print a topology
-
-        Parameters:
-        ----------
-        out : ostream
-        """
-
-        node_char = {
-            'SourceProcessor' : '*',
-            'SinkProcessor' : '>'
-        }
-
-        # TODO: Improve
-        stack = [[ n for n in self.nodes.values() if isinstance(n.processor, SourceProcessor)]]
-        while stack and stack[-1]:
-            child = stack[-1].pop()
-            out.write('  '*(len(stack)-1)+'{} '.format(node_char.get(child.processor.__class__.__name__, '|')) + child.name+'\n')
-            if child.children:
-                stack.append(child.children)
-            if not stack[-1]:
-                del stack[-1]

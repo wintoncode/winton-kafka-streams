@@ -15,11 +15,11 @@ from .processor_context import ProcessorContext
 log = logging.getLogger(__name__)
 
 class StreamTask:
-    def __init__(self, task_id, application_id, partitions, topology, consumer):
+    def __init__(self, task_id, application_id, partitions, topology_builder, consumer):
         self.task_id = task_id
         self.application_id = application_id
         self.partitions = partitions
-        self.topology = topology
+        self.topology = topology_builder.build()
         self.consumer = consumer
 
         self.queue = queue.Queue()
@@ -45,8 +45,8 @@ class StreamTask:
 
         record = self.queue.get()
 
-        self.context.currentNode = list(self.topology.sources.values())[0] # TODO: FIXME-  assumes only one topic
-        list(self.topology.sources.values())[0].process(record.key(), record.value()) # TODO: FIXME - assumes only one topic
+        self.context.currentNode = self.topology.sources[0] # TODO: FIXME-  assumes only one topic
+        self.topology.sources[0].process(record.key(), record.value()) # TODO: FIXME - assumes only one topic
 
 class StreamThread:
     def __init__(self, _topology, _config):
@@ -57,7 +57,7 @@ class StreamThread:
         self.tasks = []
         self._running = True
 
-        self.topics = list(self.topology.sources.keys()) # TODO: FIXME - assumes only one topic
+        self.topics = _topology.topics
 
         log.info('Topics for consumer are: %s', self.topics)
         # TODO: read values from config

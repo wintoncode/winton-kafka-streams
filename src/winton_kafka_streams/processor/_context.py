@@ -18,7 +18,6 @@ class Context:
     def __init__(self):
         self.currentNode = None
 
-        self._stores = {}
         self.currentNode = None
 
     def send(self, topic, key, obj):
@@ -44,12 +43,6 @@ class Context:
         """
 
         pass
-
-    def add_store(self, name, store):
-        if name in self._stores:
-            raise KafkaStreamsError(f"Store with name {name} already exists")
-        log.info(f"Adding store {name} to node {self.currentNode.name}")
-        self._stores[name] = store
 
     def get_store(self, name):
         if not self.currentNode:

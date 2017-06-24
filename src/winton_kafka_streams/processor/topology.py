@@ -134,7 +134,7 @@ class TopologyBuilder:
         self._sources.update({tpc:processor_node for tpc in topics})
         return processor_node
 
-    def processor(self, name, processor, *parents, stores):
+    def processor(self, name, processor, *parents, stores=[]):
         """
         Add a processor to the topology
 

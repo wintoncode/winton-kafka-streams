@@ -51,14 +51,11 @@ def _debug_run(config_file):
 
     double_store = SimpleStore('simple-store')
     context = ProcessorContext()
-    # context.add_store('prices', double_store)
 
     topology = TopologyBuilder()
     src = topology.source('prices', ['price'])
     proc_double = topology.processor('double', DoubleProcessor('double', context), 'prices', stores=[double_store])
     result = topology.sink('result', 'priceX2', 'double')
-
-    #topology.pprint(sys.stdout)
 
     ks = kafka_stream.KafkaStream(topology, kafka_config)
     ks.start()

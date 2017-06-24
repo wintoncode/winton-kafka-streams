@@ -105,5 +105,5 @@ class TestTopology(unittest.TestCase):
         # Separate connection step
         self.topology.connect_processor_to_store('my-processor-1', 'my-simple-state')
 
-        assert len(self.topology.nodes['my-processor-1'].processor.context._stores) == 1
-        assert 'my-simple-state' in self.topology.nodes['my-processor-1'].processor.context._stores
+        assert len(self.topology.nodes['my-processor-1'].stores) == 1
+        assert 'my-simple-state' in self.topology.nodes['my-processor-1'].stores

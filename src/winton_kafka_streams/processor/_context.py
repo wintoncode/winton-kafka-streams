@@ -53,5 +53,6 @@ class Context:
             raise KafkaStreamsError(f"Store {name} is not found in node {self.currentNode.name}")
 
         # TODO: Need to check for a global state here
+        #       This is the reason that processors access store through context
 
         return self.currentNode.stores[name]

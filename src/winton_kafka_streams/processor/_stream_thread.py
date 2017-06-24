@@ -61,8 +61,8 @@ class StreamThread:
 
         log.info('Topics for consumer are: %s', self.topics)
         # TODO: read values from config
-        self.consumer = Consumer({'bootstrap.servers': 'localhost', 'group.id': 'testgroup',
-                                  'default.topic.config': {'auto.offset.reset': 'smallest'}})
+        self.consumer = Consumer({'bootstrap.servers': self.config.BOOTSTRAP_SERVERS, 'group.id': 'testgroup',
+                                  'default.topic.config': {'auto.offset.reset': self.config.AUTO_OFFSET_RESET}})
         self.consumer.subscribe(self.topics)
 
         self.thread = threading.Thread(target=self.run)#, daemon=True)

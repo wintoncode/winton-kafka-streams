@@ -22,8 +22,8 @@ class MyTestProcessor(wks_processor.processor.BaseProcessor):
 
 def _create_full_topology(topology):
     topology.source('my-source', ['my-input-topic-1'])
-    topology.processor('my-processor-1', MyTestProcessor(), 'my-source')
-    topology.processor('my-processor-2', MyTestProcessor(), 'my-source')
+    topology.processor('my-processor-1', MyTestProcessor, 'my-source')
+    topology.processor('my-processor-2', MyTestProcessor, 'my-source')
     topology.sink('my-sink', 'my-output-topic-1', 'my-processor-1', 'my-processor-2')
 
     context = wks_processor.processor_context.ProcessorContext()
@@ -40,7 +40,7 @@ class TestTopology(unittest.TestCase):
 
     def test_processor(self):
         self.topology.source('my-source', ['my-input-topic-1'])
-        self.topology.processor('my-processor', MyTestProcessor(), 'my-source')
+        self.topology.processor('my-processor', MyTestProcessor, 'my-source')
 
         assert len(self.topology.nodes) == 2
         assert 'my-source' in self.topology.nodes.keys()
@@ -48,7 +48,7 @@ class TestTopology(unittest.TestCase):
 
     def test_sink(self):
         self.topology.source('my-source', ['my-input-topic-1'])
-        self.topology.processor('my-processor', MyTestProcessor(), 'my-source')
+        self.topology.processor('my-processor', MyTestProcessor, 'my-source')
         self.topology.sink('my-sink', 'my-output-topic-1', 'my-processor')
 
         assert len(self.topology.nodes) == 3

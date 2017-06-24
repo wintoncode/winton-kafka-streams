@@ -45,6 +45,11 @@ class TopologyBuilder:
         self._sinks = {}
         self.state_stores = {}
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
     def _add_node(self, name, processor, inputs=[]):
         if name in self.nodes:
@@ -132,9 +137,9 @@ class TopologyBuilder:
         processor_node = ProcessorNode(name, SourceProcessor(topics))
         self._add_node(name, processor_node, [])
         self._sources.update({tpc:processor_node for tpc in topics})
-        return processor_node
+        return self
 
-    def processor(self, name, processor, *parents, stores=[]):
+    def processor(self, name, processor_type, *parents, stores=[]):
         """
         Add a processor to the topology
 
@@ -157,15 +162,15 @@ class TopologyBuilder:
         """
         if not parents:
             raise KafkaStreamsError("Processor '%s' must have a minimum of 1 input", name)
-        processor_node = ProcessorNode(name, processor)
+        processor_node = ProcessorNode(name, processor_type())
         self._add_node(name, processor_node, parents)
         if stores:
             for store in stores:
                 self.add_state_store(store, name)
-        return processor_node
+        return self
 
     def sink(self, name, topic, *parents):
         processor_node = ProcessorNode(name, SinkProcessor(topic))
         self._add_node(name, processor_node, parents)
         self._sinks[topic] = processor_node
-        return processor_node
+        return self

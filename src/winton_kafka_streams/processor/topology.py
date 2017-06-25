@@ -197,7 +197,7 @@ class TopologyBuilder:
     def build(self):
         nodes = {}
         sources = [source_builder(nodes) for source_builder in self._sources]
-        processors = [processor_builder(nodes) for processor_builder in self._processors ]
+        processors = [processor_builder(nodes) for processor_builder in self._processors]
         sinks = [sink_builder(nodes) for sink_builder in self._sinks]
 
         return Topology(nodes, sources, processors, sinks)

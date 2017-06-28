@@ -47,8 +47,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Winton Kafka Streams Python'
-copyright = '2017, Robert Wall'
-author = 'Robert Wall'
+copyright = '2017, Winton Group'
+author = 'Winton Group'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -128,7 +128,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'WintonKafkaStreamsPython.tex', 'Winton Kafka Streams Python Documentation',
-     'Robert Wall', 'manual'),
+     'Winton Group', 'manual'),
 ]
 
 

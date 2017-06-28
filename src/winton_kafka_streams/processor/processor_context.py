@@ -9,8 +9,10 @@ from . import _context
 log = logging.getLogger(__name__)
 
 class ProcessorContext(_context.Context):
-    def __init__(self):
+    def __init__(self, _recordCollector):
         super().__init__()
+
+        self.recordCollector = _recordCollector
 
     def send(self, topic, key, value):
         """

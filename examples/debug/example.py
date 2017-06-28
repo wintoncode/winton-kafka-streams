@@ -5,12 +5,9 @@ Main entrypoints
 
 """
 
-import sys
 import logging
 
-from confluent_kafka import Consumer, KafkaError
-
-from winton_kafka_streams.processor import BaseProcessor, ProcessorContext, TopologyBuilder
+from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 from winton_kafka_streams.state.simple import SimpleStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_stream as kafka_stream
@@ -18,12 +15,12 @@ import winton_kafka_streams.kafka_stream as kafka_stream
 log = logging.getLogger(__name__)
 
 class DoubleProcessor(BaseProcessor):
-    def __init__(self, _name, _context):
+    def __init__(self):
         super().__init__()
 
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
-        self.store = self.context.get_store("prices")
+        self.store = self.context.get_store("simple-store")
 
         self.context.schedule(1000)
 
@@ -49,27 +46,19 @@ class DoubleProcessor(BaseProcessor):
 def _debug_run(config_file):
     kafka_config.read_local_config(config_file)
 
+    # Can also directly set config variables inline in Python
+    #kafka_config.KEY_SERDE = MySerde
+
     double_store = SimpleStore('simple-store')
-    context = ProcessorContext()
-    context.add_store('prices', double_store)
 
-    topology = TopologyBuilder()
-    src = topology.source('prices', 'price')
-    proc_double = topology.processor('double', DoubleProcessor('double', context), 'prices')
-    result = topology.sink('result', 'priceX2', 'double')
+    with TopologyBuilder() as topology_builder:
+        topology_builder. \
+            source('prices', ['price']). \
+            processor('double', DoubleProcessor, 'prices', stores=[double_store]). \
+            sink('result', 'priceX2', 'double')
 
-    # TODO: This is out of place - we can have other context too
-    context.currentNode = src
-
-    # TODO: Nodes not initialised correctly
-    src.initialise(context)
-    proc_double.initialise(context)
-    result.initialise(context)
-
-    #topology.pprint(sys.stdout)
-
-    ks = kafka_stream.KafkaStream(topology, kafka_config)
-    ks.start()
+    wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
+    wks.start()
 
 
 

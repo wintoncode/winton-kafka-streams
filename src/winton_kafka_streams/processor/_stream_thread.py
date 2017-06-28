@@ -1,8 +1,6 @@
 """
 Kafka consumer poll thread
 
-TODO: Definitely very rough and ready!
-
 """
 
 import queue
@@ -12,16 +10,30 @@ import threading
 
 from confluent_kafka import Consumer, KafkaError
 
+from .processor_context import ProcessorContext
+
 log = logging.getLogger(__name__)
 
 class StreamTask:
-    def __init__(self, task_id, application_id, partitions, topology, consumer):
+    def __init__(self, task_id, application_id, partitions, topology_builder, consumer):
         self.task_id = task_id
         self.application_id = application_id
         self.partitions = partitions
-        self.topology = topology
+        self.topology = topology_builder.build()
         self.consumer = consumer
+
         self.queue = queue.Queue()
+        self.context = ProcessorContext()
+
+        self._init_topology(self.context)
+
+    def _init_topology(self, context):
+        for node in self.topology.nodes.values():
+            try:
+                context.currentNode = node
+                node.initialise(context)
+            finally:
+                context.currentNode = None
 
     def add_records(self, partition, records):
         for record in records:
@@ -33,7 +45,8 @@ class StreamTask:
 
         record = self.queue.get()
 
-        self.topology.sources[0].process(record.key(), record.value())
+        self.context.currentNode = self.topology.sources[0] # TODO: FIXME-  assumes only one topic
+        self.topology.sources[0].process(record.key(), record.value()) # TODO: FIXME - assumes only one topic
 
 class StreamThread:
     def __init__(self, _topology, _config):
@@ -41,14 +54,15 @@ class StreamThread:
         self.topology = _topology
         self.config = _config
 
+        self.tasks = []
         self._running = True
 
-        self.topics = list(itertools.chain.from_iterable([src.processor.topic for src in self.topology.sources]))
+        self.topics = _topology.topics
 
         log.info('Topics for consumer are: %s', self.topics)
         # TODO: read values from config
-        self.consumer = Consumer({'bootstrap.servers': 'localhost', 'group.id': 'testgroup',
-                    'default.topic.config': {'auto.offset.reset': 'smallest'}})
+        self.consumer = Consumer({'bootstrap.servers': self.config.BOOTSTRAP_SERVERS, 'group.id': 'testgroup',
+                                  'default.topic.config': {'auto.offset.reset': self.config.AUTO_OFFSET_RESET}})
         self.consumer.subscribe(self.topics)
 
         self.thread = threading.Thread(target=self.run)#, daemon=True)
@@ -69,7 +83,6 @@ class StreamThread:
                 while self.tasks[0].process():
                     pass
             elif record.error().code() == KafkaError._PARTITION_EOF:
-                log.debug('Partition EOF')
                 continue
             elif record.error():
                 log.error('Record error received: %s', record.error())

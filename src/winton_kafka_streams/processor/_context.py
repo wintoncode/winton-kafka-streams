@@ -3,7 +3,11 @@ Processor context is the link to kafka from individual processor objects
 
 """
 
+import logging
+
 from .._error import KafkaStreamsError
+
+log = logging.getLogger(__name__)
 
 class Context:
     """
@@ -14,8 +18,7 @@ class Context:
     def __init__(self):
         self.currentNode = None
 
-        # TODO: State must be handled by another class
-        self._stores = {}
+        self.currentNode = None
 
     def send(self, topic, key, obj):
         """
@@ -41,16 +44,15 @@ class Context:
 
         pass
 
-    def add_store(self, name, store):
-        if name in self._stores:
-            raise KafkaStreamsError(f"Store with name {name} already exists")
-        self._stores[name] = store
-
     def get_store(self, name):
         if not self.currentNode:
             raise KafkaStreamsError("Access of state from unknown node")
 
-        # TODO: Need to check for a global state here
+        log.info(f"Searching for store {name} in processor node {self.currentNode.name}")
+        if not name in self.currentNode.stores:
+            raise KafkaStreamsError(f"Store {name} is not found in node {self.currentNode.name}")
 
-        # TODO: Should check that currentNode has access to this state
-        return self._stores[name]
+        # TODO: Need to check for a global state here
+        #       This is the reason that processors access store through context
+
+        return self.currentNode.stores[name]

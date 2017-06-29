@@ -3,8 +3,6 @@ Test the base processor - base class to all
 custom processor implementations
 """
 
-import mock
-
 import winton_kafka_streams.processor as wks_processor
 from winton_kafka_streams.processor.processor_context import ProcessorContext
 

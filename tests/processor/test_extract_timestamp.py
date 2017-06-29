@@ -3,7 +3,7 @@ Tests of using wall clock time from a message
 
 """
 
-import mock
+import unittest.mock as mock
 import pytest
 import time
 
@@ -24,7 +24,7 @@ def test_RecordTimeStampExtractor():
     rtse = RecordTimeStampExtractorImpl()
     assert rtse.extract(wks_processor.KafkaRecord(_topic='TestTopic', _partition=None, _offset=1234, _key=None, _value=None, _timestamp=expected_time), expected_time-1) == expected_time
 
-def test_InvalidRecordTiemStampExtractorNoImpl():
+def test_InvalidRecordTimeStampExtractorNoImpl():
     on_error_time = expected_time - 1000
     rtse = RecordTimeStampExtractorImpl()
     with mock.patch('time.time', return_value=on_error_time):

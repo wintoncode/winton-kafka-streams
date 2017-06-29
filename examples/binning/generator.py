@@ -1,13 +1,23 @@
 """Simple script to generate random price data on Kafka topic"""
 
 
+import logging
 from collections import namedtuple
+import datetime as dt
+import time
 import pandas as pd
 from random_prices import RandomPrices
 from source import Source
 
 ITEM = namedtuple('ITEM', ['name', 'prob', 'seed', 'initial_price', 'sigma'])
 
+LOGGER = logging.getLogger(__name__)
+
+_VERBOSITY = {
+    0: logging.WARN,
+    1: logging.INFO,
+    2: logging.DEBUG
+}
 
 def _get_items(items):
     parsed_items = []
@@ -41,17 +51,30 @@ def _get_sources(items, limit):
     }
 
 
-def _run(sources, timestamp, freq, produce):
+def _run(sources, timestamp, freq, real_time, produce):
     stop = False
     while not stop:
+        if real_time:
+            start_time = dt.datetime.utcnow()
         for (name, source) in sources.items():
             try:
                 price = next(source)
                 if price is not None:
                     produce(timestamp, name, price)
+                    LOGGER.info('%s,%s,%s', timestamp, name, price)
             except StopIteration:
                 stop = True
         timestamp = timestamp + freq
+        if real_time:
+            duration = dt.datetime.utcnow() - start_time
+            sleep_seconds = freq.total_seconds() - duration.total_seconds()
+            if sleep_seconds < 0.0:
+                LOGGER.warning(
+                    'Not keeping up, lagging by %ss', -sleep_seconds
+                )
+            else:
+                LOGGER.debug('Sleeping for %ss', sleep_seconds)
+                time.sleep(sleep_seconds)
 
 
 def _get_parser():
@@ -89,6 +112,17 @@ def _get_parser():
         help='The Kafka topic to produce to, this will be ignored '
              'if --broker-list is not specified as well.'
     )
+    parser.add_argument(
+        '-rt', '--real-time', dest='real_time', action='store_true',
+        help='Toggle (approximate) real-time generation of random '
+             'prices.  This will output prices in real-time trying '
+             'to match the frequency specified in --freq.'
+    )
+    parser.add_argument(
+        '-v', dest='verbosity', action='count', default=0,
+        help='Enable more verbose logging (can be specified multiple '
+             'times to increase verbosity)'
+    )
     return parser
 
 
@@ -99,10 +133,12 @@ def main():
     sources = _get_sources(_get_items(args.items), args.limit)
     timestamp = pd.Timestamp(args.start)
     freq = pd.Timedelta(args.freq)
+    logging.basicConfig(level=_VERBOSITY.get(args.verbosity, logging.DEBUG))
     if args.broker_list is None:
         def _produce(timestamp, name, price):
             print('{},{},{}'.format(timestamp, name, price))
-        _run(sources, timestamp, freq, _produce)
+        LOGGER.debug('Running in console mode')
+        _run(sources, timestamp, freq, args.real_time, _produce)
     else:
         if args.topic is None:
             raise ValueError('Must specify --topic when using Kafka')
@@ -118,8 +154,8 @@ def main():
                     produced = True
                 except BufferError:
                     producer.poll(10)
-
-        _run(sources, timestamp, freq, _produce)
+        LOGGER.debug('Producing to %s on %s', args.topic, args.broker_list)
+        _run(sources, timestamp, freq, args.real_time, _produce)
         producer.flush()
 
 

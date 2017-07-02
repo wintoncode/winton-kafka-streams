@@ -34,10 +34,8 @@ class RecordCollector:
         self.send_to_partition(topic, key, value, timestamp, keySerialiser,
                                valueSerialiser, partition = partitioner.partition(key, value, n_partitions))
 
-    def send_to_partition(self, topic, key, value, timestamp = time.time(),
+    def send_to_partition(self, topic, key, value, timestamp,
                           keySerialiser = IdentitySerialiser(), valueSerialiser = IdentitySerialiser(), *, partition = 0):
-        if timestamp is None:
-            timestamp = time.time()
         key = keySerialiser.serialise(key)
         value = valueSerialiser.serialise(value)
         try:

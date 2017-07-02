@@ -4,11 +4,19 @@ Processor context is the link to kafka from individual processor objects
 """
 
 import logging
+import functools
 
 from .._error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 
+def _raiseNullRecord(fn):
+    @functools.wraps(fn)
+    def _inner(*args, **kwargs):
+        if args[0].currentRecord is None:
+            raise KafkaStreamsError(f"Record cannot be unset when retrieving {fn.__name__}")
+        return fn(*args, **kwargs)
+    return _inner
 class Context:
     """
     Processor context object
@@ -17,8 +25,7 @@ class Context:
 
     def __init__(self):
         self.currentNode = None
-
-        self.currentNode = None
+        self.currentRecord = None
 
     def send(self, topic, key, obj):
         """
@@ -43,6 +50,26 @@ class Context:
         """
 
         pass
+
+    @property
+    @_raiseNullRecord
+    def offset(self):
+        return self.currentRecord.offset()
+
+    @property
+    @_raiseNullRecord
+    def partition(self):
+        return self.currentRecord.partition()
+
+    @property
+    @_raiseNullRecord
+    def timestamp(self):
+        return self.currentRecord.timestamp()
+
+    @property
+    @_raiseNullRecord
+    def topic(self):
+        return self.currentRecord.topic()
 
     def get_store(self, name):
         if not self.currentNode:

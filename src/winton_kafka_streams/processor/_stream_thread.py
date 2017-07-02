@@ -38,6 +38,7 @@ class StreamTask:
                 node.initialise(context)
             finally:
                 context.currentNode = None
+                context.currentRecord = None
 
     def add_records(self, partition, records):
         for record in records:
@@ -48,10 +49,13 @@ class StreamTask:
             return False
 
         record = self.queue.get()
+        self.context.currentRecord = record
 
-         # TODO: FIXME-  assumes only one topic (next two lines)
+        # TODO: FIXME-  assumes only one topic (next two lines)
         self.context.currentNode = self.topology.sources[0]
         self.topology.sources[0].process(record.key(), record.value())
+
+        self.context.currentRecord = None
 
 class StreamThread:
     def __init__(self, _topology, _config, _kafka_supplier):

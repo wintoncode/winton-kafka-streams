@@ -8,22 +8,26 @@ import logging
 import itertools
 import threading
 
-from confluent_kafka import Consumer, KafkaError
+from confluent_kafka import KafkaError
 
+from ._record_collector import RecordCollector
 from .processor_context import ProcessorContext
 
 log = logging.getLogger(__name__)
 
 class StreamTask:
-    def __init__(self, task_id, application_id, partitions, topology_builder, consumer):
-        self.task_id = task_id
-        self.application_id = application_id
-        self.partitions = partitions
-        self.topology = topology_builder.build()
-        self.consumer = consumer
+    def __init__(self, _task_id, _application_id, _partitions, _topology_builder, _consumer, _producer):
+        self.task_id = _task_id
+        self.application_id = _application_id
+        self.partitions = _partitions
+        self.topology = _topology_builder.build()
+        self.consumer = _consumer
+        self.producer = _producer
+
+        self.recordCollector = RecordCollector(self.producer)
 
         self.queue = queue.Queue()
-        self.context = ProcessorContext()
+        self.context = ProcessorContext(self.recordCollector)
 
         self._init_topology(self.context)
 
@@ -34,6 +38,7 @@ class StreamTask:
                 node.initialise(context)
             finally:
                 context.currentNode = None
+                context.currentRecord = None
 
     def add_records(self, partition, records):
         for record in records:
@@ -44,15 +49,20 @@ class StreamTask:
             return False
 
         record = self.queue.get()
+        self.context.currentRecord = record
 
-        self.context.currentNode = self.topology.sources[0] # TODO: FIXME-  assumes only one topic
-        self.topology.sources[0].process(record.key(), record.value()) # TODO: FIXME - assumes only one topic
+        # TODO: FIXME-  assumes only one topic (next two lines)
+        self.context.currentNode = self.topology.sources[0]
+        self.topology.sources[0].process(record.key(), record.value())
+
+        self.context.currentRecord = None
 
 class StreamThread:
-    def __init__(self, _topology, _config):
+    def __init__(self, _topology, _config, _kafka_supplier):
         super().__init__()
         self.topology = _topology
         self.config = _config
+        self.kafka_supplier = _kafka_supplier
 
         self.tasks = []
         self._running = True
@@ -60,9 +70,7 @@ class StreamThread:
         self.topics = _topology.topics
 
         log.info('Topics for consumer are: %s', self.topics)
-        # TODO: read values from config
-        self.consumer = Consumer({'bootstrap.servers': self.config.BOOTSTRAP_SERVERS, 'group.id': 'testgroup',
-                                  'default.topic.config': {'auto.offset.reset': self.config.AUTO_OFFSET_RESET}})
+        self.consumer = self.kafka_supplier.consumer()
         self.consumer.subscribe(self.topics)
 
         self.thread = threading.Thread(target=self.run)#, daemon=True)
@@ -92,7 +100,9 @@ class StreamThread:
     def on_assign(self, consumer, partitions):
         log.debug('Assigning partitions %s', partitions)
         # TODO: task_id == 0 is not correct, fix
-        self.tasks = [StreamTask(0, self.config.APPLICATION_ID, partitions, self.topology, consumer)]
+        self.tasks = [StreamTask(0, self.config.APPLICATION_ID,
+                                 partitions, self.topology, consumer,
+                                 self.kafka_supplier.producer())]
 
     def on_revoke(self, consumer, partitions):
         log.debug('Revoking partitions %s', partitions)

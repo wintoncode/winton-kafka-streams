@@ -25,9 +25,8 @@ class DoubleProcessor(BaseProcessor):
         self.context.schedule(1000)
 
     def process(self, key, value):
-        self.store.add(key, value)
-
-        print("DoubleProcessor::process("+str(key)+", "+str(value)+")")
+        doubled = float(value)*2
+        self.store.add(key, str(doubled))
 
         # TODO: In absence of a punctuate call schedule running:
         if len(self.store) == 4:
@@ -53,9 +52,9 @@ def _debug_run(config_file):
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \
-            source('prices', ['price']). \
-            processor('double', DoubleProcessor, 'prices', stores=[double_store]). \
-            sink('result', 'priceX2', 'double')
+            source('input-value', ['wks-debug-example-topic']). \
+            processor('double', DoubleProcessor, 'input-value', stores=[double_store]). \
+            sink('output-double', 'wks-debug-example-output', 'double')
 
     wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
     wks.start()

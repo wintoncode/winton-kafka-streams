@@ -46,7 +46,8 @@ class SinkProcessor(BaseProcessor):
         self.topic = _topic
 
     def process(self, key, value):
-        self.context.send(self.topic, key, value)
+        timestamp = self.context.timestamp
+        self.context.recordCollector.send_to_partition(self.topic, key, value, timestamp)
 
     def punctuate(self):
         pass

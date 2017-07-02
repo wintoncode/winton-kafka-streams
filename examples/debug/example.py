@@ -52,9 +52,9 @@ def _debug_run(config_file):
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \
-            source('prices', ['price']). \
-            processor('double', DoubleProcessor, 'prices', stores=[double_store]). \
-            sink('doubled', 'priceX2', 'double')
+            source('input-value', ['wks-debug-example-topic']). \
+            processor('double', DoubleProcessor, 'input-value', stores=[double_store]). \
+            sink('output-double', 'wks-debug-example-output', 'double')
 
     wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
     wks.start()

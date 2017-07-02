@@ -40,11 +40,10 @@ class RecordCollector:
         value = valueSerialiser.serialise(value)
         try:
             self.producer.produce(topic, value, key, partition, self.on_delivery, timestamp)
+            self.producer.poll(0) # Ensure previous message's delivery reports are served
         except BufferError as be:
+            # TODO: We should handle this better. The queue can be full, for example on leader election and we should retry
             log.exception(be)
-        # TODO: Check confluent kafka python doc - it should raise KafkaException?
-        #except KafkaException as ke:
-        #    log.exception(ke)
         except NotImplementedError as nie:
             log.exception(nie)
 

@@ -8,7 +8,13 @@ from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_stream as kafka_stream
 
-log = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+
+_VERBOSITY = {
+    0: logging.WARN,
+    1: logging.INFO,
+    2: logging.DEBUG
+}
 
 
 class Binning(BaseProcessor):
@@ -44,12 +50,7 @@ class Binning(BaseProcessor):
         """Produce output"""
         for k in sorted(self.store):
             self.context.forward(k, self.store[k])
-            log.debug('Forwarding to sink  (%s, %s)', k, self.store[k])
-            print(
-                "{},{}".format(
-                    k.decode('utf-8'), self.store[k].decode('utf-8')
-                )
-            )
+            LOGGER.debug('Forwarding to sink  (%s, %s)', k, self.store[k])
         self.store = {}
 
 
@@ -58,7 +59,7 @@ def _debug_run(config_file):
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \
-            source('prices', ['price']). \
+            source('prices', ['prices']). \
             processor('binner', Binning, 'prices'). \
             sink('result', 'bin-prices', 'binner')
 
@@ -66,15 +67,27 @@ def _debug_run(config_file):
     wks.start()
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
+def _get_parser():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         '--config-file', '-c', required=True,
         help="Local configuration - will override internal defaults"
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        '-v', dest='verbosity', action='count', default=0,
+        help='Enable more verbose logging, use once for info, '
+             'twice for debug.'
+    )
+    return parser
 
+
+def main():
+    parser = _get_parser()
+    args = parser.parse_args()
+    logging.basicConfig(level=_VERBOSITY.get(args.verbosity, logging.DEBUG))
     _debug_run(args.config_file)
+
+
+if __name__ == '__main__':
+    main()

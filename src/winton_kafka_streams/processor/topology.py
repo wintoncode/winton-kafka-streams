@@ -105,8 +105,8 @@ class TopologyBuilder:
             raise KafkaStreamsError(f"Store with name {store.name} already exists")
         self.state_stores[store.name] = store
 
-        for procesor_name in args:
-            self._connect_processor_to_store(nodes, procesor_name, store.name)
+        for processor_name in args:
+            self._connect_processor_to_store(nodes, processor_name, store.name)
 
 
     def _connect_processor_to_store(self, nodes, processor_name, *args):

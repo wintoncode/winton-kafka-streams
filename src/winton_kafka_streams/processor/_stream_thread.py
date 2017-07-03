@@ -71,7 +71,6 @@ class StreamThread:
 
         log.info('Topics for consumer are: %s', self.topics)
         self.consumer = self.kafka_supplier.consumer()
-        self.consumer.subscribe(self.topics)
 
         self.thread = threading.Thread(target=self.run)#, daemon=True)
 

@@ -38,14 +38,18 @@ class RecordCollector:
                           keySerialiser = IdentitySerialiser(), valueSerialiser = IdentitySerialiser(), *, partition = 0):
         key = keySerialiser.serialise(key)
         value = valueSerialiser.serialise(value)
-        try:
-            self.producer.produce(topic, value, key, partition, self.on_delivery, timestamp)
-            self.producer.poll(0) # Ensure previous message's delivery reports are served
-        except BufferError as be:
-            # TODO: We should handle this better. The queue can be full, for example on leader election and we should retry
-            log.exception(be)
-        except NotImplementedError as nie:
-            log.exception(nie)
+        produced = False
+        while not produced:
+            try:
+                self.producer.produce(topic, value, key, partition, self.on_delivery, timestamp)
+                self.producer.poll(0) # Ensure previous message's delivery reports are served
+                produced = True
+            except BufferError as be:
+                log.exception(be)
+                self.producer.poll(10) # Wait a bit longer to give buffer more time to flush
+            except NotImplementedError as nie:
+                log.exception(nie)
+                produced = True  # should not enter infinite loop
 
     def on_delivery(self, err, msg):
         if err:

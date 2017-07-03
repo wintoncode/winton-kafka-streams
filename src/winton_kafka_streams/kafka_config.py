@@ -176,7 +176,7 @@ Added to a windows maintainMs to ensure data is not deleted from the log prematu
 Default: 86400000 (millisecons) = 1 day
 Importance: Low
 """
-WINDOWSTORE_CHANGELOG_ADDITINOAL_RETENTION_MS = 86_000_000
+WINDOWSTORE_CHANGELOG_ADDITIONAL_RETENTION_MS = 86_000_000
 
 
 

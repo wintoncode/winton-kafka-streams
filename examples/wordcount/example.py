@@ -14,27 +14,26 @@ import winton_kafka_streams.kafka_stream as kafka_stream
 
 log = logging.getLogger(__name__)
 
-class DoubleProcessor(BaseProcessor):
+class WordCount(BaseProcessor):
     def __init__(self):
         super().__init__()
 
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
-        self.store = self.context.get_store("simple-store")
+        self.store = self.context.get_store("word-counts")
+
+        self.context.schedule(1000)
 
     def process(self, key, value):
-        log.debug(f'DoubleProcessor::process({key}, {value})')
-        doubled = float(value)*2
-        self.store.add(key, str(doubled))
+        n_words = len(value.split())
+        self.store.add(key, str(n_words))
 
         # TODO: In absence of a punctuate call schedule running:
-        if len(self.store) == 4:
-            self.punctuate()
+        self.punctuate()
 
         self.context.commit()
 
     def punctuate(self):
-        log.debug('DoubleProcessor::punctuate')
         for k, v in iter(self.store):
             log.debug('Forwarding to sink  (%s, %s)', k, v)
             self.context.forward(k, v)
@@ -47,13 +46,13 @@ def _debug_run(config_file):
     # Can also directly set config variables inline in Python
     #kafka_config.KEY_SERDE = MySerde
 
-    double_store = SimpleStore('simple-store')
+    word_count_store = SimpleStore('word-counts')
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \
-            source('input-value', ['wks-debug-example-topic']). \
-            processor('double', DoubleProcessor, 'input-value', stores=[double_store]). \
-            sink('output-double', 'wks-debug-example-output', 'double')
+            source('input-value', ['wks-wordcount-example-topic']). \
+            processor('count', WordCount, 'input-value', stores=[word_count_store]). \
+            sink('output-count', 'wks-wordcount-example-count', 'count')
 
     wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
     wks.start()

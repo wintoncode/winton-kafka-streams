@@ -142,6 +142,25 @@ class TopologyBuilder:
             processor_node.add_store(self.state_stores[store_name])
 
     def source(self, name, topics):
+        """
+        Add a source to the topology
+
+        Parameters:
+        -----------
+        name : str
+            The name of the node
+        topics : str
+            Source topic
+
+        Returns:
+        --------
+        topology : TopologyBuilder
+
+        Raises:
+        KafkaStreamsError
+            * If node with same name exists already
+        """
+
         def build_source(name, topics, nodes):
             source = ProcessorNode(name, SourceProcessor(topics))
             self._add_node(nodes, name, source, [])
@@ -169,7 +188,7 @@ class TopologyBuilder:
         topology : TopologyBuilder
 
         Raises:
-        KafkaStreamserror
+        KafkaStreamsError
             * If no inputs are specified
         """
         if not parents:

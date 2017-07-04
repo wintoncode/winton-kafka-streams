@@ -71,7 +71,7 @@ def _get_parser():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '--config-file', '-c', required=True,
+        '--config-file', '-c', default='config.properties',
         help="Local configuration - will override internal defaults"
     )
     parser.add_argument(

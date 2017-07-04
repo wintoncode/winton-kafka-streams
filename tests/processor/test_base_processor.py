@@ -12,7 +12,7 @@ def test_createBaseProcessor():
     wks_processor.BaseProcessor()
 
 def test_initialiseBaseProcessor():
-    mock_context = ProcessorContext()
+    mock_context = ProcessorContext(None)
     bp = wks_processor.BaseProcessor()
     bp.initialise('my-name', mock_context)
 

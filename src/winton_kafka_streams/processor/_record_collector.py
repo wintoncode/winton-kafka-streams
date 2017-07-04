@@ -22,7 +22,7 @@ class RecordCollector:
     def __init__(self, _producer):
         self.producer = _producer
 
-    def send_to_stream(self, topic, key, value, timestamp, keySerialiser , valueSerialiser,
+    def send_to_stream(self, topic, key, value, timestamp, keySerialiser, valueSerialiser,
                        *, stream_partitioner = DefaultStreamPartitioner()):
 
         partitions = producer.partitionsFor(topic)

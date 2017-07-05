@@ -1,5 +1,19 @@
 """
-Configuration of Apache Kafka
+Configuration values that may be set to control behaviour of Kafka Streams
+
+Configuration may either be set inline in your application using:
+
+import kafka_config
+kafka_config.BOOSTRAP_SERVERS = 'localhost:9092'
+
+or as a file in java properties format. The property names are identical to
+those used in the Java implementation for ease of sharing between both.
+
+External files can be loaded using:
+
+import kafka_config
+kafka_config.read_local_config('path/to/kafka.streams.config')
+
 
 """
 

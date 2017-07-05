@@ -54,7 +54,7 @@ class Binning(BaseProcessor):
         self.store = {}
 
 
-def _debug_run(config_file):
+def run(config_file):
     kafka_config.read_local_config(config_file)
 
     with TopologyBuilder() as topology_builder:
@@ -86,7 +86,7 @@ def main():
     parser = _get_parser()
     args = parser.parse_args()
     logging.basicConfig(level=_VERBOSITY.get(args.verbosity, logging.DEBUG))
-    _debug_run(args.config_file)
+    run(args.config_file)
 
 
 if __name__ == '__main__':

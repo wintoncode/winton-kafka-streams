@@ -31,7 +31,7 @@ class DoubleProcessor(BaseProcessor):
         if len(self.store) == 4:
             self.punctuate()
 
-        self.context.commit()
+            self.context.commit()
 
     def punctuate(self):
         log.debug('DoubleProcessor::punctuate')

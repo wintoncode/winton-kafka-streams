@@ -22,6 +22,8 @@ class RecordCollector:
     def __init__(self, _producer):
         self.producer = _producer
 
+        self.offsets = []
+
     def send_to_stream(self, topic, key, value, timestamp, keySerialiser, valueSerialiser,
                        *, stream_partitioner = DefaultStreamPartitioner()):
 
@@ -62,3 +64,14 @@ class RecordCollector:
     def close(self):
         log.debug('Closing producer')
         self.producer.close()
+
+    def offsets(self):
+        """
+        The last ack'ed offsets from the topology producer
+
+        Returns:
+        --------
+        offsets : list
+          The last acknowledged offsets
+        """
+        return self.offsets

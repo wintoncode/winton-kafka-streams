@@ -179,16 +179,21 @@ class StreamThread:
     def shutdown(self):
         self.set_state(self.State.NOT_RUNNING)
 
+    def add_stream_tasks(self, assignment):
+        # simplistic, but good enough for now. should take co-locating topics etc. into account in the future
+        grouped_tasks = {f'{topic_partition.topic}_{topic_partition.partition}': {topic_partition}
+                         for topic_partition in assignment}
+        self.tasks = [StreamTask(task_id, self.config.APPLICATION_ID,
+                                 partitions, self.topology, self.consumer,
+                                 self.kafka_supplier.producer())
+                      for (task_id, partitions)
+                      in grouped_tasks.items()]
 
     def on_assign(self, consumer, partitions):
         log.debug('Assigning partitions %s', partitions)
 
         self.set_state_when_not_in_pending_shutdown(self.State.ASSIGNING_PARTITIONS)
-        # TODO: task_id == 0 is not correct, fix
-        self.tasks = [StreamTask(0, self.config.APPLICATION_ID,
-                                 partitions, self.topology, consumer,
-                                 self.kafka_supplier.producer())]
-
+        self.add_stream_tasks(partitions)
         self.set_state_when_not_in_pending_shutdown(self.State.RUNNING)
 
     def on_revoke(self, consumer, partitions):

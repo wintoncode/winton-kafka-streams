@@ -4,8 +4,8 @@
 
 In addition to the packages required by the Kafka Streams package, you
 will also need to have `pandas` available.  See also `live-plot.ipynb`
-for a jupyter notebook running the example (it additionally requires
-`jupyter` and `bokeh`).
+for a jupyter notebook visualising this example (it additionally
+requires `jupyter` and `bokeh`).
 
 ## Prepare Kafka
 

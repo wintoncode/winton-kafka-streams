@@ -3,7 +3,7 @@ Tests of using wall clock time from a message
 
 """
 
-import mock
+import unittest.mock as mock
 import pytest
 import time
 

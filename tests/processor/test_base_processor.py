@@ -3,7 +3,7 @@ Test the base processor - base class to all
 custom processor implementations
 """
 
-import mock
+import unittest.mock as mock
 
 import winton_kafka_streams.processor as wks_processor
 from winton_kafka_streams.processor.processor_context import ProcessorContext
@@ -12,7 +12,7 @@ def test_createBaseProcessor():
     wks_processor.BaseProcessor()
 
 def test_initialiseBaseProcessor():
-    mock_context = ProcessorContext(None)
+    mock_context = ProcessorContext(None, None)
     bp = wks_processor.BaseProcessor()
     bp.initialise('my-name', mock_context)
 

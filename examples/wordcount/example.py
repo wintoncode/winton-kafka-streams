@@ -30,8 +30,6 @@ class WordCount(BaseProcessor):
         # TODO: In absence of a punctuate call schedule running:
         self.punctuate()
 
-        self.context.commit()
-
     def punctuate(self):
         for k, v in self.store.items():
             log.debug('Forwarding to sink  (%s, %s)', k, v)

@@ -186,7 +186,7 @@ class StreamThread:
 
             log.debug('Ending stream thread...')
         finally:
-            # TODO: @ah- must commit offsets
+            self.commitAll()
             self.shutdown()
 
     def processAndPunctuate(self, record):
@@ -208,6 +208,9 @@ class StreamThread:
             log.exception(ke)
             raise
 
+    def commitAll(self):
+        map(self.commit, self.tasks)
+
     def shutdown(self):
         self.set_state(self.State.NOT_RUNNING)
 
@@ -224,8 +227,8 @@ class StreamThread:
         self.set_state_when_not_in_pending_shutdown(self.State.RUNNING)
 
     def on_revoke(self, consumer, partitions):
-        # TODO: @ah- need to commit offsets during rebalance
         log.debug('Revoking partitions %s', partitions)
+        self.commitAll()
         self.set_state_when_not_in_pending_shutdown(self.State.PARTITIONS_REVOKED)
         self.tasks = []
 

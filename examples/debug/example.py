@@ -24,7 +24,13 @@ class DoubleProcessor(BaseProcessor):
 
     def process(self, key, value):
         log.debug(f'DoubleProcessor::process({key}, {value})')
-        doubled = float(value)*2
+        try:
+            # For the puropose of example just log and continue
+            # on non-float values
+            doubled = float(value)*2
+        except ValueError as ve:
+            log.exception(ve)
+            return
         self.store.add(key, str(doubled))
 
         # TODO: In absence of a punctuate call schedule running:

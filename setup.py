@@ -26,7 +26,6 @@ setup(
     packages=[
         'winton_kafka_streams',
     ],
-    package_dir={'': 'src'},
     include_package_data=True,
     install_requires=requirements,
     license="Apache Software License 2.0",

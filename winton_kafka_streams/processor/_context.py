@@ -10,7 +10,7 @@ from .._error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 
-def _raiseNullRecord(fn):
+def _raiseIfNullRecord(fn):
     @functools.wraps(fn)
     def _inner(*args, **kwargs):
         if args[0].currentRecord is None:
@@ -52,22 +52,22 @@ class Context:
         pass
 
     @property
-    @_raiseNullRecord
+    @_raiseIfNullRecord
     def offset(self):
         return self.currentRecord.offset()
 
     @property
-    @_raiseNullRecord
+    @_raiseIfNullRecord
     def partition(self):
         return self.currentRecord.partition()
 
     @property
-    @_raiseNullRecord
+    @_raiseIfNullRecord
     def timestamp(self):
         return self.currentRecord.timestamp()
 
     @property
-    @_raiseNullRecord
+    @_raiseIfNullRecord
     def topic(self):
         return self.currentRecord.topic()
 

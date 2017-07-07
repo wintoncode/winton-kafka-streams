@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+setup for Winton Kafka Streams package
+
+"""
+
 from setuptools import setup
 
 with open('README.md') as readme_file:

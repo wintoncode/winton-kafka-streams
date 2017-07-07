@@ -15,6 +15,10 @@ import winton_kafka_streams.kafka_stream as kafka_stream
 log = logging.getLogger(__name__)
 
 class DoubleProcessor(BaseProcessor):
+    """
+    Example processor that will double the value passed in
+
+    """
     def __init__(self):
         super().__init__()
 

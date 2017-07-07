@@ -20,7 +20,8 @@ class BaseProcessor:
 
 class SourceProcessor(BaseProcessor):
     """
-    Fetches values from kafka and forwards to child nodes for processing
+    Fetches values from a kafka topic(s)and forwards
+    them to child node for processing
 
     """
 
@@ -36,19 +37,20 @@ class SourceProcessor(BaseProcessor):
 
 class SinkProcessor(BaseProcessor):
     """
-    Values will be pushed to kafka topic
+    Forward values from processor nodes to the record collector
+    from where they will be written to a Kafka topic
 
     """
 
     def __init__(self, _topic):
         super().__init__()
-
         self.topic = _topic
 
     def process(self, key, value):
-        timestamp = self.context.timestamp
-        self.context.recordCollector.send_to_partition(self.topic, key, value, timestamp)
+        self._send_to_partition(key, value, self.context.timestamp)
 
     def punctuate(self):
         pass
 
+    def _send_to_partition(self, key, value, timestamp):
+        self.context.recordCollector.send_to_partition(self.topic, key, value, timestamp)

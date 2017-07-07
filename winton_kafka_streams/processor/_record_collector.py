@@ -4,8 +4,12 @@ Record collector sends produced results to kafka topic
 """
 
 import time
+import logging
 
+from .serde.identity import IdentitySerde
 from .._error import KafkaStreamsError
+
+log = logging.getLogger(__name__)
 
 class DefaultStreamPartitioner:
     def __init__(self):
@@ -14,11 +18,12 @@ class DefaultStreamPartitioner:
     def partition(self):
         return 0
 
-class IdentitySerialiser:
-    def serialise(self, value):
-        return value
-
 class RecordCollector:
+    """
+    Collects records to be output to Kafka topics after
+    they have been processed by the topology
+
+    """
     def __init__(self, _producer):
         self.producer = _producer
 
@@ -35,10 +40,13 @@ class RecordCollector:
                                valueSerialiser, partition = partitioner.partition(key, value, n_partitions))
 
     def send_to_partition(self, topic, key, value, timestamp,
-                          keySerialiser = IdentitySerialiser(), valueSerialiser = IdentitySerialiser(), *, partition = 0):
+                          keySerialiser = IdentitySerde(), valueSerialiser = IdentitySerde(), *, partition = 0):
         key = keySerialiser.serialise(key)
         value = valueSerialiser.serialise(value)
         produced = False
+
+        log.debug("Sending to partition %d of topic %s :  (%s, %s, %s)", partition, topic, key, value, timestamp)
+
         while not produced:
             try:
                 self.producer.produce(topic, value, key, partition, self.on_delivery, timestamp)
@@ -52,10 +60,25 @@ class RecordCollector:
                 produced = True  # should not enter infinite loop
 
     def on_delivery(self, err, msg):
+        """
+        Callback function after a value is output to a source.
+
+        Will raise an exception if an error is detected.
+
+        TODO: Decide if an error should be raised or if this should be demoted?
+              Can an error be raised if a broker fails? Should we simply warn
+              and continue to poll and retrty in this case?
+        """
+
+        # TODO: Is err correct? Should we check if msg has error?
         if err:
             raise KafkaStreamsError(f'Error on delivery of message {msg}')
 
     def flush(self):
+        """
+        Flush all pending items in the queue to the output topic on Kafka
+
+        """
         log.debug('Flushing producer')
         self.producer.flush()
 

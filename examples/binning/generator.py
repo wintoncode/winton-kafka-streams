@@ -1,4 +1,10 @@
-"""Simple script to generate random price data on Kafka topic"""
+"""
+Simple script to generate prices values with normally
+distributed returns on a Kafka 'prices' topic.
+
+Run ./generator --help to see the full range of options.
+
+"""
 
 
 import logging
@@ -52,6 +58,10 @@ def _get_sources(items, limit):
 
 
 def _run(sources, timestamp, freq, real_time, produce):
+    """
+    Start the generation of prices on the 'prices' topic
+    """
+
     stop = False
     while not stop:
         if real_time:

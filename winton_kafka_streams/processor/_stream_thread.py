@@ -17,6 +17,12 @@ from .processor_context import ProcessorContext
 log = logging.getLogger(__name__)
 
 class StreamTask:
+    """
+    Stream tasks are associated with a partition group(s)
+    and are responsible for passing values from that partition
+    to an instance of the topology for processing.
+
+    """
     def __init__(self, _task_id, _application_id, _partitions, _topology_builder, _consumer, _producer):
         self.task_id = _task_id
         self.application_id = _application_id

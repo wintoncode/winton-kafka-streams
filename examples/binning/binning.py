@@ -18,7 +18,22 @@ _VERBOSITY = {
 
 
 class Binning(BaseProcessor):
-    """Implementation of binning process"""
+    """
+    Implementation of binning process
+
+    The code will be passed a value from the 'prices' source topic
+    in Kafka. This processor will search for the final value in the
+    binning range (1 minute) and output that to the 'bin-prices'
+    sink topic in Kafka.
+
+    There is a Python generator script provided to generate prices
+    with normally distributed returns. You can control the frequency
+    of generation, the mean and standard deviation and the number
+    of items generated.
+
+    TODO: Later this example should be extended to show partition
+          support.
+    """
 
     def __init__(self):
         super().__init__()
@@ -30,7 +45,21 @@ class Binning(BaseProcessor):
         self.context.schedule(60)
 
     def process(self, _, value):
-        """Process message"""
+        """
+        Processes values from the source in search of the last
+        value in that bin.
+
+        Parameters:
+        -----------
+        _ : object, unused (key)
+            The key read from the source topic (unused here)
+        value: object
+            The value read from the source topic
+
+        Returns:
+        --------
+          None
+        """
         timestamp, name, price = value.decode('utf-8').split(',')
         timestamp = pd.Timestamp(timestamp)
 
@@ -54,8 +83,17 @@ class Binning(BaseProcessor):
         self.store = {}
 
 
-def _debug_run(config_file):
-    kafka_config.read_local_config(config_file)
+def run(config_file = None):
+    """
+    Starts the binning process
+
+    Called here from main() when invoked from command line
+    but could equally import binning and call
+    binning.run(config_file)
+
+    """
+    if config_file:
+        kafka_config.read_local_config(config_file)
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \
@@ -86,7 +124,7 @@ def main():
     parser = _get_parser()
     args = parser.parse_args()
     logging.basicConfig(level=_VERBOSITY.get(args.verbosity, logging.DEBUG))
-    _debug_run(args.config_file)
+    run(args.config_file)
 
 
 if __name__ == '__main__':

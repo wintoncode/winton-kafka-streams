@@ -139,6 +139,9 @@ class StreamThread:
         def is_running(self):
             return not self in (self.NOT_RUNNING, self.PENDING_SHUTDOWN)
 
+        def __str__(self):
+            return self.name
+
 
     def __init__(self, _topology, _config, _kafka_supplier):
         super().__init__()

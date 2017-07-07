@@ -6,6 +6,7 @@ Main entrypoints
 """
 
 import logging
+import time
 import collections
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
@@ -49,7 +50,13 @@ def run(config_file):
 
     wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
     wks.start()
-
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        wks.close()
 
 
 if __name__ == '__main__':

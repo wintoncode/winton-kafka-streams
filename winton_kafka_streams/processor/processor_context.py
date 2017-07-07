@@ -9,6 +9,12 @@ from . import _context
 log = logging.getLogger(__name__)
 
 class ProcessorContext(_context.Context):
+    """
+    The same processor context is shared betwen all nodes in
+    a single topology instance. It takes care of forwarding
+    values to downstream processors.
+
+    """
     def __init__(self, _recordCollector):
         super().__init__()
 
@@ -16,7 +22,7 @@ class ProcessorContext(_context.Context):
 
     def forward(self, key, value):
         """
-        Forward the values directly to the next node in the topology
+        Forward the key/value to the next node in the topology
 
         """
         previousNode = self.currentNode

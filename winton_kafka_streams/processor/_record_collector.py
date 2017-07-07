@@ -11,12 +11,10 @@ from .._error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 
-class DefaultStreamPartitioner:
-    def __init__(self):
-        pass
 
-    def partition(self):
-        return 0
+# When producing a message with partition = UA rdkafka will run a partitioner for us
+RD_KAFKA_PARTITION_UA = -1
+
 
 class RecordCollector:
     """
@@ -27,20 +25,9 @@ class RecordCollector:
     def __init__(self, _producer):
         self.producer = _producer
 
-    def send_to_stream(self, topic, key, value, timestamp, keySerialiser, valueSerialiser,
-                       *, stream_partitioner = DefaultStreamPartitioner()):
-
-        partitions = producer.partitionsFor(topic)
-        n_partitions = len(partitions)
-        if n_partitions == 0:
-            raise KafkaStreamsError(f"Could not get partition information for {topic}." \
-                                    "This can happen if the topic does not exist.")
-
-        self.send_to_partition(topic, key, value, timestamp, keySerialiser,
-                               valueSerialiser, partition = partitioner.partition(key, value, n_partitions))
-
-    def send_to_partition(self, topic, key, value, timestamp,
-                          keySerialiser = IdentitySerde(), valueSerialiser = IdentitySerde(), *, partition = 0):
+    def send(self, topic, key, value, timestamp,
+             keySerialiser = IdentitySerde(), valueSerialiser = IdentitySerde(),
+             *, partition = RD_KAFKA_PARTITION_UA, partitioner = None):
         key = keySerialiser.serialise(key)
         value = valueSerialiser.serialise(value)
         produced = False
@@ -49,7 +36,7 @@ class RecordCollector:
 
         while not produced:
             try:
-                self.producer.produce(topic, value, key, partition, self.on_delivery, timestamp)
+                self.producer.produce(topic, value, key, partition, self.on_delivery, partitioner, timestamp)
                 self.producer.poll(0) # Ensure previous message's delivery reports are served
                 produced = True
             except BufferError as be:
@@ -85,4 +72,3 @@ class RecordCollector:
     def close(self):
         log.debug('Closing producer')
         self.producer.close()
-

@@ -126,7 +126,7 @@ class StreamThread:
             if self is self.NOT_RUNNING:
                 return new_state in (self.RUNNING,)
             elif self is self.RUNNING:
-                return new_state in (self.PARTITIONS_REVOKED,)
+                return new_state in (self.PARTITIONS_REVOKED, self.PENDING_SHUTDOWN)
             elif self is self.PARTITIONS_REVOKED:
                 return new_state in (self.PENDING_SHUTDOWN, self.ASSIGNING_PARTITIONS)
             elif self is self.ASSIGNING_PARTITIONS:

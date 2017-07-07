@@ -79,6 +79,10 @@ class TopologyBuilder:
     def sinks(self):
         return self._sinks
 
+    @property
+    def state_stores(self):
+        return self._state_stores
+
     def state_store(self, store_name, store, *args):
         """
         Add a store and connect to processors

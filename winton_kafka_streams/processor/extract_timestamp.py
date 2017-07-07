@@ -32,7 +32,7 @@ class RecordTimeStampExtractor(TimeStampExtractor):
         time : long
             Time in seconds since the epoch
         """
-        timestamp = record.timestamp
+        timestamp = record.timestamp()
         if timestamp < 0:
             return self.on_error(record, timestamp, previous_timestamp)
 

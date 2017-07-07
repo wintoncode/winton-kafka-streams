@@ -24,7 +24,7 @@ class DoubleProcessor(BaseProcessor):
 
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
-        self.store = self.context.get_store("simple-store")
+        self.store = self.context.get_store("double-store")
 
     def process(self, key, value):
         log.debug(f'DoubleProcessor::process({key}, {value})')
@@ -57,13 +57,12 @@ def _debug_run(config_file):
     # Can also directly set config variables inline in Python
     #kafka_config.KEY_SERDE = MySerde
 
-    double_store = SimpleStore('simple-store')
-
     with TopologyBuilder() as topology_builder:
         topology_builder. \
-            source('input-value', ['wks-debug-example-topic']). \
-            processor('double', DoubleProcessor, 'input-value', stores=[double_store]). \
-            sink('output-double', 'wks-debug-example-output', 'double')
+            source('input-value', ['wks-debug-example-topic-two']). \
+            processor('double', DoubleProcessor, 'input-value'). \
+            sink('output-double', 'wks-debug-example-output', 'double'). \
+            state_store('double-store', lambda: SimpleStore('double-store'), ['double'])
 
     wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
     wks.start()

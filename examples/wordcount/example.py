@@ -9,7 +9,6 @@ import logging
 import collections
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.state.simple import SimpleStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_stream as kafka_stream
 

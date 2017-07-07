@@ -23,9 +23,10 @@ class Context:
 
     """
 
-    def __init__(self):
+    def __init__(self, _state_stores):
         self.currentNode = None
         self.currentRecord = None
+        self._state_stores = _state_stores
 
     def send(self, topic, key, obj):
         """
@@ -67,11 +68,10 @@ class Context:
         if not self.currentNode:
             raise KafkaStreamsError("Access of state from unknown node")
 
-        log.info(f"Searching for store {name} in processor node {self.currentNode.name}")
-        if not name in self.currentNode.stores:
-            raise KafkaStreamsError(f"Store {name} is not found in node {self.currentNode.name}")
-
         # TODO: Need to check for a global state here
         #       This is the reason that processors access store through context
 
-        return self.currentNode.stores[name]
+        if not name in self._state_stores:
+            raise KafkaStreamsError(f"Store {name} is not found")
+
+        return self._state_stores[name]

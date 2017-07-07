@@ -27,8 +27,8 @@ class Binning(BaseProcessor):
     sink topic in Kafka.
 
     There is a Python generator script provided to generate prices
-    with normall distributed returns. You can control the frequency
-    of generation, the mean and standard deviationm and the numnber
+    with normally distributed returns. You can control the frequency
+    of generation, the mean and standard deviation and the number
     of items generated.
 
     TODO: Later this example should be extended to show partition
@@ -46,7 +46,8 @@ class Binning(BaseProcessor):
 
     def process(self, _, value):
         """
-        Accept a value from the
+        Processes values from the source in search of the last
+        value in that bin.
 
         Parameters:
         -----------

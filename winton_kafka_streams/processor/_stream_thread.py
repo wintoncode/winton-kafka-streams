@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 class StreamTask:
     """
     Stream tasks are associated with a partition group(s)
-    and are resonsible for passing values from that partition
+    and are responsible for passing values from that partition
     to an instance of the topology for processing.
 
     """

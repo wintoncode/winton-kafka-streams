@@ -4,9 +4,12 @@ Record collector sends produced results to kafka topic
 """
 
 import time
+import logging
 
 from .serde.identity import IdentitySerde
 from .._error import KafkaStreamsError
+
+log = logging.getLogger(__name__)
 
 class DefaultStreamPartitioner:
     def __init__(self):
@@ -41,6 +44,9 @@ class RecordCollector:
         key = keySerialiser.serialise(key)
         value = valueSerialiser.serialise(value)
         produced = False
+
+        log.debug("Sending to partition %d of topic %s :  (%s, %s, %s)", partition, topic, key, value, timestamp)
+
         while not produced:
             try:
                 self.producer.produce(topic, value, key, partition, self.on_delivery, timestamp)

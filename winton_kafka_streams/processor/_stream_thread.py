@@ -181,8 +181,10 @@ class StreamThread:
             self.consumer.subscribe(self.topics, on_assign=self.on_assign, on_revoke=self.on_revoke)
 
             while self.still_running():
-                record = self.consumer.poll()
-                if not record.error():
+                record = self.consumer.poll(0.1)
+                if record is None:
+                    continue
+                elif not record.error():
                     log.debug('Received message: %s', record.value().decode('utf-8'))
                     self.processAndPunctuate(record)
                 elif record.error().code() == KafkaError._PARTITION_EOF:

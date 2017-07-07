@@ -21,12 +21,12 @@ class MyTestProcessor(wks_processor.processor.BaseProcessor):
 
 
 def _create_full_topology(topology):
-    store = wks_state.SimpleStore('my-simple-state')
 
     topology.source('my-source', ['my-input-topic-1'])
-    topology.processor('my-processor-1', MyTestProcessor, 'my-source', stores=[store])
+    topology.processor('my-processor-1', MyTestProcessor, 'my-source')
     topology.processor('my-processor-2', MyTestProcessor, 'my-source')
     topology.sink('my-sink', 'my-output-topic-1', 'my-processor-1', 'my-processor-2')
+    topology.state_store('my-simple-state', lambda: wks_state.SimpleStore('my-simple-state'), ['my-processor-1'])
 
     return topology.build()
 

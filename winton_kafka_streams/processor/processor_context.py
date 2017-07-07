@@ -15,9 +15,9 @@ class ProcessorContext(_context.Context):
     values to downstream processors.
 
     """
-    def __init__(self, _task, _recordCollector):
+    def __init__(self, _task, _recordCollector, _state_stores):
 
-        super().__init__()
+        super().__init__(_state_stores)
 
         self.task = _task
         self.recordCollector = _recordCollector

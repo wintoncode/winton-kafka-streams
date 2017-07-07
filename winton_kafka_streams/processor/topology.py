@@ -16,7 +16,6 @@ class ProcessorNode:
         self.name = _name
         self.processor = _processor
         self.children = []
-        self.stores = {}
 
     def initialise(self, _context):
         self.processor.initialise(self.name, _context)
@@ -30,17 +29,14 @@ class ProcessorNode:
     def __repr__(self):
         return self.__class__.__name__ + f"({self.processor.__class__}({self.name}))"
 
-    def add_store(self, store):
-        log.debug(f"Processor Node {self.name} now has state {store.name} added")
-        self.stores[store.name] = store
-
 
 class Topology:
-    def __init__(self, _nodes, _sources, _processors, _sinks):
+    def __init__(self, _nodes, _sources, _processors, _sinks, _state_stores):
         self.nodes = _nodes
         self.sources = _sources
         self.processors = _processors
         self.sinks = _sinks
+        self.state_stores = _state_stores
 
 class TopologyBuilder:
     """
@@ -51,7 +47,7 @@ class TopologyBuilder:
         self._sources = []
         self._processors = []
         self._sinks = []
-        self.state_stores = {}
+        self._state_stores = {}
 
     def __enter__(self):
         return self
@@ -83,14 +79,14 @@ class TopologyBuilder:
     def sinks(self):
         return self._sinks
 
-    def _add_state_store(self, nodes, store, *args):
+    def state_store(self, store_name, store, *args):
         """
         Add a store and connect to processors
 
         Parameters:
         -----------
         store : winton_kafka_streams.processor.store.AbstractStore
-            State store instance
+            State store factory
         *args : processor names to which store should be attached
 
         Raises:
@@ -101,45 +97,9 @@ class TopologyBuilder:
         if store is None:
             raise KafkaStreamsError("Store cannot be None")
 
-        if store.name in self.state_stores:
+        if store_name in self._state_stores:
             raise KafkaStreamsError(f"Store with name {store.name} already exists")
-        self.state_stores[store.name] = store
-
-        for processor_name in args:
-            self._connect_processor_to_store(nodes, processor_name, store.name)
-
-
-    def _connect_processor_to_store(self, nodes, processor_name, *args):
-        """
-        Connect state store instance(s) to a processor
-
-        Parameters:
-        -----------
-        processor_name : str
-            The object to which the state store(s)
-            are attached
-        *args : winton_kafka_streams.processor.store.AbstractStore
-            State store instance(s)
-
-        Raises:
-        KafkaStreamsError
-            * If processor_name is unset
-            * If a state store is attached to a source or sink
-        """
-        if not processor_name:
-            raise KafkaStreamsError("Processor name cannot be empty")
-
-        processor_node = nodes.get(processor_name)
-        if processor_node is None:
-            raise KafkaStreamsError(f"Unrecognised processor name {processor_name} passed to connect state store")
-        if isinstance(processor_node.processor, (SourceProcessor, SinkProcessor)):
-            raise KafkaStreamsError(f"{processor_node.__class__.__name__} type cannot have a state store attached")
-
-        for store_name in args:
-            log.debug(f"Adding store {store_name} to {processor_name}")
-            if store_name not in self.state_stores:
-                raise KafkaStreamsError(f"Unknown store {store_name} being added to {processor_name}")
-            processor_node.add_store(self.state_stores[store_name])
+        self._state_stores[store_name] = store
 
     def source(self, name, topics):
         """
@@ -170,7 +130,7 @@ class TopologyBuilder:
         self.topics.extend(topics)
         return self
 
-    def processor(self, name, processor_type, *parents, stores=[]):
+    def processor(self, name, processor_type, *parents):
         """
         Add a processor to the topology
 
@@ -194,15 +154,12 @@ class TopologyBuilder:
         if not parents:
             raise KafkaStreamsError("Processor '%s' must have a minimum of 1 input", name)
 
-        def build_processor(name, processor_type, parents, stores, nodes):
+        def build_processor(name, processor_type, parents, nodes):
             processor_node = ProcessorNode(name, processor_type())
             self._add_node(nodes, name, processor_node, parents)
-            if stores:
-                for store in stores:
-                    self._add_state_store(nodes, store, name)
             return processor_node
 
-        self._processors.append(functools.partial(build_processor, name, processor_type, parents, stores))
+        self._processors.append(functools.partial(build_processor, name, processor_type, parents))
         return self
 
     def sink(self, name, topic, *parents):
@@ -218,5 +175,6 @@ class TopologyBuilder:
         sources = [source_builder(nodes) for source_builder in self._sources]
         processors = [processor_builder(nodes) for processor_builder in self._processors]
         sinks = [sink_builder(nodes) for sink_builder in self._sinks]
+        state_stores = {name: create() for (name, create) in self._state_stores.items()}
 
-        return Topology(nodes, sources, processors, sinks)
+        return Topology(nodes, sources, processors, sinks, state_stores)

@@ -34,7 +34,7 @@ class StreamTask:
         self.recordCollector = RecordCollector(self.producer)
 
         self.queue = queue.Queue()
-        self.context = ProcessorContext(self, self.recordCollector)
+        self.context = ProcessorContext(self, self.recordCollector, self.topology.state_stores)
 
         self.needCommit = False
         self.consumedOffsets = {}

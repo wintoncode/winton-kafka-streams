@@ -20,7 +20,7 @@ def test_sinkProcessorProcess():
 
     with mock.patch('winton_kafka_streams.processor.ProcessorContext.timestamp', new_callable=mock.PropertyMock) as mock_timestamp:
         mock_timestamp.return_value = _expected_timestamp
-        processor_context = wks_processor.ProcessorContext(None, None)
+        processor_context = wks_processor.ProcessorContext(None, None, {})
         processor_context.recordCollector = mock.MagicMock()
 
         sink = wks_processor.SinkProcessor('topic1')

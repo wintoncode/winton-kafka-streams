@@ -9,7 +9,7 @@ import itertools
 import threading
 from enum import Enum
 
-from confluent_kafka import KafkaError
+from confluent_kafka import KafkaError, TopicPartition
 
 from ._record_collector import RecordCollector
 from .processor_context import ProcessorContext
@@ -34,7 +34,10 @@ class StreamTask:
         self.recordCollector = RecordCollector(self.producer)
 
         self.queue = queue.Queue()
-        self.context = ProcessorContext(self.recordCollector)
+        self.context = ProcessorContext(self, self.recordCollector)
+
+        self.needCommit = False
+        self.consumedOffsets = {}
 
         self._init_topology(self.context)
 
@@ -47,7 +50,7 @@ class StreamTask:
                 context.currentNode = None
                 context.currentRecord = None
 
-    def add_records(self, partition, records):
+    def add_records(self, records):
         for record in records:
             self.queue.put(record)
 
@@ -62,7 +65,19 @@ class StreamTask:
         self.context.currentNode = self.topology.sources[0]
         self.topology.sources[0].process(record.key(), record.value())
 
+        self.consumedOffsets[(record.topic(), record.partition())] = record.offset()
+
         self.context.currentRecord = None
+
+    def commit(self):
+        for ((t, p), o) in self.consumedOffsets.items():
+            self.consumer.commit(offsets=[TopicPartition(t, p, o+1)], async=False)
+        self.needCommit = False
+        self.consumedOffsets.clear()
+
+    def __repr__(self):
+        return self.__class__.__name__ + f":{self.task_id}"
+
 
 class StreamThread:
 
@@ -139,7 +154,7 @@ class StreamThread:
         log.info('Topics for consumer are: %s', self.topics)
         self.consumer = self.kafka_supplier.consumer()
 
-        self.thread = threading.Thread(target=self.run)#, daemon=True)
+        self.thread = threading.Thread(target=self.run)
         self.set_state(self.State.RUNNING)
 
     def set_state(self, new_state):
@@ -169,9 +184,7 @@ class StreamThread:
                 record = self.consumer.poll()
                 if not record.error():
                     log.debug('Received message: %s', record.value().decode('utf-8'))
-                    self.tasks[0].add_records(None, [record])
-                    while self.tasks[0].process():
-                        pass
+                    self.processAndPunctuate(record)
                 elif record.error().code() == KafkaError._PARTITION_EOF:
                     continue
                 elif record.error():
@@ -179,8 +192,30 @@ class StreamThread:
 
             log.debug('Ending stream thread...')
         finally:
+            self.commitAll()
             self.shutdown()
 
+    def processAndPunctuate(self, record):
+        task = self.tasks[record.partition()]
+        task.add_records([record])
+        task.process()
+        if task.needCommit:
+            self.commit(task)
+
+    def commit(self, task):
+        try:
+            log.debug('Commit task "%s"', task)
+            task.commit()
+        except CommitFailedException as cfe:
+            log.warn('Failed to commit')
+            log.exception(cfe)
+            pass
+        except KafkaException as ke:
+            log.exception(ke)
+            raise
+
+    def commitAll(self):
+        map(self.commit, self.tasks)
 
     def shutdown(self):
         self.set_state(self.State.NOT_RUNNING)
@@ -199,6 +234,7 @@ class StreamThread:
 
     def on_revoke(self, consumer, partitions):
         log.debug('Revoking partitions %s', partitions)
+        self.commitAll()
         self.set_state_when_not_in_pending_shutdown(self.State.PARTITIONS_REVOKED)
         self.tasks = []
 

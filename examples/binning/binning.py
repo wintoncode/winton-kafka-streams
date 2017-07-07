@@ -71,9 +71,9 @@ class Binning(BaseProcessor):
 
         if key not in self.store and len(self.store) == 2:
             self.punctuate()  # TODO need a better way to do that
-        self.store[key] = price.encode('utf-8')
+            self.context.commit()
 
-        self.context.commit()
+        self.store[key] = price.encode('utf-8')
 
     def punctuate(self):
         """Produce output"""

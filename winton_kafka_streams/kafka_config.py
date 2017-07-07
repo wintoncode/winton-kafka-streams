@@ -223,7 +223,7 @@ Consumer
 Default: false, see Consumer Auto Commit
 Importance: low
 """
-ENABLE_AUTO_COMMIT = False
+ENABLE_AUTO_COMMIT = 'false'
 
 """
 Consumer
@@ -253,4 +253,4 @@ def read_local_config(config_file):
             raise KafkaStreamsError(f'Unrecognised property {k} read from config file {config_file}')
         globals()[ku] = v
 
-        log.debug('Config: %s = %s', k, v)
+        log.debug('Config from "%s": %s = %s', config_file, k, v)

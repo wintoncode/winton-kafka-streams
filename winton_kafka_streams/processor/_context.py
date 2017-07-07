@@ -43,14 +43,6 @@ class Context:
 
         pass
 
-    def commit(self):
-        """
-        Commit the current state, along with the upstream offset and the downstream sent data
-
-        """
-
-        pass
-
     @property
     @_raiseIfNullRecord
     def offset(self):

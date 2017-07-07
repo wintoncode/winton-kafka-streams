@@ -15,10 +15,24 @@ class ProcessorContext(_context.Context):
     values to downstream processors.
 
     """
-    def __init__(self, _recordCollector):
+    def __init__(self, _task, _recordCollector):
+
         super().__init__()
 
+        self.task = _task
         self.recordCollector = _recordCollector
+
+    def commit(self):
+        """
+        Request a commit
+
+        Returns:
+        --------
+         - None
+
+        """
+
+        self.task.needCommit = True
 
     def forward(self, key, value):
         """

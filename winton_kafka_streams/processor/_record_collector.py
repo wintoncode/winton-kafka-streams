@@ -79,3 +79,4 @@ class RecordCollector:
     def close(self):
         log.debug('Closing producer')
         self.producer.close()
+

@@ -215,7 +215,8 @@ class StreamThread:
             raise
 
     def commitAll(self):
-        map(self.commit, self.tasks)
+        for task in self.tasks:
+            self.commit(task)
 
     def shutdown(self):
         self.set_state(self.State.NOT_RUNNING)

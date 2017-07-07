@@ -22,7 +22,7 @@ cluster (a single replica is sufficient for testing) are required.
 Confluent Python Kafka is also required and it should install
 as a dependency by pip. If it fails during installation, 
 then we recommend installing librdkafka with HomeBrew and setting 
-CFLAGS=-I/usr/local/include and LDFLAGS=-L/usr/local/lib is
+`CFLAGS=-I/usr/local/include` and `LDFLAGS=-L/usr/local/lib` is
 recommended. 
 
 Cloning the Winton Kafka Streams repository from GitHub is
@@ -36,7 +36,7 @@ or your local mirror.
 
 ### Running tests
 You will need to install these dependencies manuall into your environment:
- * pytest
+ - pytest
  
 We chose not to add these dependencies to the pip requirements as they
 are required for development only and not for running the package. 

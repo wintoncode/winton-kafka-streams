@@ -35,9 +35,9 @@ we recommend using pip install which will pull the package from PyPI
 or your local mirror. 
 
 ### Running tests
-You will need to install these dependencies manuall into your environment:
+You will need to install these dependencies manually into your environment:
  - pytest
- 
+
 We chose not to add these dependencies to the pip requirements as they
 are required for development only and not for running the package. 
 

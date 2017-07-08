@@ -159,7 +159,7 @@ def main():
             produced = False
             while not produced:
                 try:
-                    producer.produce(args.topic, data.encode('utf-8'))
+                    producer.produce(args.topic, value=data.encode('utf-8'), key=name)
                     producer.poll(0)
                     produced = True
                 except BufferError:

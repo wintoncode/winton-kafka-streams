@@ -10,6 +10,7 @@ import winton_kafka_streams.processor as wks_processor
 
 expected_time = 1496735099.23712
 error_time_offset = 1000
+timestamp_create_time = 1
 
 class TestRecordTimeStampExtractorImpl(wks_processor.RecordTimeStampExtractor):
     def on_error(self, record, timestamp, previous_timestamp):
@@ -20,7 +21,7 @@ class MockRecord:
         self.time = time
 
     def timestamp(self):
-        return self.time
+        return (timestamp_create_time, self.time)
 
 def test_RecordTimeStampExtractorNoImpl():
     pytest.raises(TypeError, wks_processor.RecordTimeStampExtractor)

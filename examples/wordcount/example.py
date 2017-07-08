@@ -28,9 +28,9 @@ class WordCount(BaseProcessor):
         self.store.update(value.decode('utf-8').split())
 
         # TODO: In absence of a punctuate call schedule running:
-        self.punctuate()
+        self.punctuate(0)
 
-    def punctuate(self):
+    def punctuate(self, timestamp):
         for k, v in self.store.items():
             log.debug('Forwarding to sink  (%s, %s)', k, v)
             self.context.forward(k, str(v))

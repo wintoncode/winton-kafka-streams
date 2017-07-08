@@ -46,3 +46,10 @@ class ProcessorContext(_context.Context):
                 child.process(key, value)
         finally:
             self.currentNode = previousNode
+
+    def schedule(self, timestamp):
+        """
+        Schedule the punctuation function call
+
+        """
+        self.task.schedule(timestamp)

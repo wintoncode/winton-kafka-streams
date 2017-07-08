@@ -71,12 +71,12 @@ class Binning(BaseProcessor):
         key = '{},{}'.format(bin_ts.isoformat(), name).encode('utf-8')
 
         if key not in self.store and len(self.store) == 2:
-            self.punctuate()  # TODO need a better way to do that
+            self.punctuate(0)  # TODO need a better way to do that
             self.context.commit()
 
         self.store[key] = price.encode('utf-8')
 
-    def punctuate(self):
+    def punctuate(self, timestamp):
         """Produce output"""
         # TODO: the key is currently symbol/timestamp, we should
         # use a custom partitioner to ensure bins are partitioned by

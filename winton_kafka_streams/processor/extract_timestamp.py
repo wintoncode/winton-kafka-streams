@@ -18,7 +18,7 @@ class RecordTimeStampExtractor(TimeStampExtractor):
 
     def extract(self, record, previous_timestamp):
         """
-        Returns wall clock time for every message
+        Returns kafka timestamp for message
 
         Parameters:
         -----------
@@ -32,7 +32,7 @@ class RecordTimeStampExtractor(TimeStampExtractor):
         time : long
             Time in seconds since the epoch
         """
-        timestamp = record.timestamp()
+        (timestamp_type, timestamp) = record.timestamp()
         if timestamp < 0:
             return self.on_error(record, timestamp, previous_timestamp)
 

@@ -77,6 +77,9 @@ class Binning(BaseProcessor):
 
     def punctuate(self):
         """Produce output"""
+        # TODO: the key is currently symbol/timestamp, we should
+        # use a custom partitioner to ensure bins are partitioned by
+        # symbol only. We'd like to keep timestamp in the key though.
         for k in sorted(self.store):
             self.context.forward(k, self.store[k])
             LOGGER.debug('Forwarding to sink  (%s, %s)', k, self.store[k])

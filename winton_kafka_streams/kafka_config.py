@@ -89,7 +89,7 @@ NUM_STANDBY_REPLICAS = 0
 
 """
 The number of threads to execute stream processing
-Defulat: 1
+Default: 1
 Importance: Medium
 """
 NUM_STREAM_THREADS = 1

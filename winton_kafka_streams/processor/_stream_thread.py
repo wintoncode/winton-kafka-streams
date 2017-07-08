@@ -126,7 +126,7 @@ class StreamThread:
             if self is self.NOT_RUNNING:
                 return new_state in (self.RUNNING,)
             elif self is self.RUNNING:
-                return new_state in (self.PARTITIONS_REVOKED,)
+                return new_state in (self.PARTITIONS_REVOKED, self.PENDING_SHUTDOWN)
             elif self is self.PARTITIONS_REVOKED:
                 return new_state in (self.PENDING_SHUTDOWN, self.ASSIGNING_PARTITIONS)
             elif self is self.ASSIGNING_PARTITIONS:
@@ -138,6 +138,9 @@ class StreamThread:
 
         def is_running(self):
             return not self in (self.NOT_RUNNING, self.PENDING_SHUTDOWN)
+
+        def __str__(self):
+            return self.name
 
 
     def __init__(self, _topology, _config, _kafka_supplier):
@@ -181,8 +184,10 @@ class StreamThread:
             self.consumer.subscribe(self.topics, on_assign=self.on_assign, on_revoke=self.on_revoke)
 
             while self.still_running():
-                record = self.consumer.poll()
-                if not record.error():
+                record = self.consumer.poll(0.1)
+                if record is None:
+                    continue
+                elif not record.error():
                     log.debug('Received message: %s', record.value().decode('utf-8'))
                     self.processAndPunctuate(record)
                 elif record.error().code() == KafkaError._PARTITION_EOF:
@@ -215,7 +220,8 @@ class StreamThread:
             raise
 
     def commitAll(self):
-        map(self.commit, self.tasks)
+        for task in self.tasks:
+            self.commit(task)
 
     def shutdown(self):
         self.set_state(self.State.NOT_RUNNING)

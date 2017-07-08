@@ -3,6 +3,7 @@ Python Kafka Streams example script for price binning
 """
 
 import logging
+import time
 import pandas as pd
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
@@ -106,6 +107,13 @@ def run(config_file = None):
 
     wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
     wks.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        wks.close()
 
 
 def _get_parser():

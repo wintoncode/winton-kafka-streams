@@ -51,3 +51,6 @@ class KafkaStream:
 
     def start(self):
         self.stream_thread.start()
+
+    def close(self):
+        self.stream_thread.close()

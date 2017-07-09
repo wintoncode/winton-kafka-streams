@@ -63,7 +63,7 @@ def _debug_run(config_file):
             source('input-value', ['wks-debug-example-topic-two']). \
             processor('double', DoubleProcessor, 'input-value'). \
             sink('output-double', 'wks-debug-example-output', 'double'). \
-            state_store('double-store', lambda: SimpleStore('double-store'), ['double'])
+            state_store('double-store', SimpleStore, 'double')
 
     wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
     wks.start()

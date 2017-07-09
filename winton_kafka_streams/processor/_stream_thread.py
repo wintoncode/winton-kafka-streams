@@ -70,6 +70,11 @@ class StreamTask:
         self.context.currentRecord = None
 
     def commit(self):
+        # may be asked to commit on rebalance or shutdown but
+        # should only commit if the processor has requested.
+        if not self.needCommit:
+            return
+
         for ((t, p), o) in self.consumedOffsets.items():
             self.consumer.commit(offsets=[TopicPartition(t, p, o+1)], async=False)
         self.needCommit = False

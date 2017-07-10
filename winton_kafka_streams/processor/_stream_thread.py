@@ -118,6 +118,12 @@ class StreamTask:
         self.context.currentNode = None
 
     def commit(self):
+        self.recordCollector.flush()
+        self.commitOffsets()
+
+    def commitOffsets(self):
+        """ Commit consumed offsets if needed """
+
         # may be asked to commit on rebalance or shutdown but
         # should only commit if the processor has requested.
         if self.commitOffsetNeeded:

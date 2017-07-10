@@ -45,6 +45,7 @@ class DoubleProcessor(BaseProcessor):
             log.debug('Forwarding to sink (%s, %s)', k, v)
             self.context.forward(k, v)
         self.store.clear()
+        self.context.commit()
 
 
 def _debug_run(config_file):

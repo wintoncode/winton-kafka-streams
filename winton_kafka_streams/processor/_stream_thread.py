@@ -121,9 +121,8 @@ class StreamTask:
         # may be asked to commit on rebalance or shutdown but
         # should only commit if the processor has requested.
         if self.commitOffsetNeeded:
-            for ((t, p), o) in self.consumedOffsets.items():
-                self.consumer.commit(offsets=[TopicPartition(t, p, o+1)], async=False)
-
+            offsetsToCommit = [TopicPartition(t, p, o+1) for ((t, p), o) in self.consumedOffsets.items()]
+            self.consumer.commit(offsets=offsetsToCommit, async=False)
             self.consumedOffsets.clear()
             self.commitOffsetNeeded = False
 

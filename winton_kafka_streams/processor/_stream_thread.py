@@ -64,7 +64,8 @@ class StreamTask:
         self.timestamp_extractor = WallClockTimeStampExtractor()
         self.current_timestamp = None
 
-        self.needCommit = False
+        self.commitRequested = False
+        self.commitOffsetNeeded = False
         self.consumedOffsets = {}
 
         self._init_topology(self.context)
@@ -95,6 +96,7 @@ class StreamTask:
         self.topology.sources[0].process(record.key(), record.value())
 
         self.consumedOffsets[(record.topic(), record.partition())] = record.offset()
+        self.commitOffsetNeeded = True
 
         self.context.currentRecord = None
         self.context.currentNode = None
@@ -118,13 +120,20 @@ class StreamTask:
     def commit(self):
         # may be asked to commit on rebalance or shutdown but
         # should only commit if the processor has requested.
-        if not self.needCommit:
-            return
+        if self.commitOffsetNeeded:
+            for ((t, p), o) in self.consumedOffsets.items():
+                self.consumer.commit(offsets=[TopicPartition(t, p, o+1)], async=False)
 
-        for ((t, p), o) in self.consumedOffsets.items():
-            self.consumer.commit(offsets=[TopicPartition(t, p, o+1)], async=False)
-        self.needCommit = False
-        self.consumedOffsets.clear()
+            self.consumedOffsets.clear()
+            self.commitOffsetNeeded = False
+
+        self.commitRequested = False
+
+    def commitNeeded(self):
+        return self.commitRequested
+
+    def needCommit(self):
+        self.commitRequested = True
 
     def schedule(self, interval):
         self.punctuation_queue.schedule(self.context.currentNode, interval)
@@ -265,7 +274,7 @@ class StreamThread:
 
         for task in self.tasks:
             task.maybe_punctuate()
-            if task.needCommit:
+            if task.commitNeeded():
                 self.commit(task)
 
     def commit(self, task):

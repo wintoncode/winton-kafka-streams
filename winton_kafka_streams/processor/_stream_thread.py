@@ -101,6 +101,8 @@ class StreamTask:
         self.context.currentRecord = None
         self.context.currentNode = None
 
+        return True
+
     def maybe_punctuate(self):
         timestamp = self.current_timestamp
 
@@ -274,8 +276,15 @@ class StreamThread:
             self.tasks[record.partition()].add_records([record])
 
     def process_and_punctuate(self):
-        for task in self.tasks:
-            task.process()
+        while True:
+            total_processed_each_round = 0
+
+            for task in self.tasks:
+                if task.process():
+                    total_processed_each_round += 1
+
+            if total_processed_each_round == 0:
+                break
 
         for task in self.tasks:
             task.maybe_punctuate()

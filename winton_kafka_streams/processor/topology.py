@@ -15,7 +15,7 @@ class ProcessorNode:
         self.name = _name
         self.processor = _processor
         self.children = []
-        self.states = set()
+        self.state_stores = set()
 
     def initialise(self, _context):
         self.processor.initialise(self.name, _context)
@@ -191,6 +191,6 @@ class TopologyBuilder:
         for state_builder in self._state_stores:
             (state_stores[state_builder.name()], processors) = state_builder()
             for p in processors:
-                nodes[p].states.add(state_builder.name())
+                nodes[p].state_stores.add(state_builder.name())
 
         return Topology(nodes, sources, processors, sinks, state_stores)

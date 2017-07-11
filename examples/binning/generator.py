@@ -57,7 +57,7 @@ def _get_sources(items, limit):
     }
 
 
-def _run(sources, timestamp, freq, real_time, produce):
+def _run(sources, timestamp, freq, real_time, rt_mutiplier, produce):
     """
     Start the generation of prices on the 'prices' topic
     """
@@ -77,7 +77,7 @@ def _run(sources, timestamp, freq, real_time, produce):
         timestamp = timestamp + freq
         if real_time:
             duration = dt.datetime.utcnow() - start_time
-            sleep_seconds = freq.total_seconds() - duration.total_seconds()
+            sleep_seconds = (freq.total_seconds() - duration.total_seconds()) / rt_mutiplier
             if sleep_seconds < 0.0:
                 LOGGER.warning(
                     'Not keeping up, lagging by %ss', -sleep_seconds
@@ -129,6 +129,11 @@ def _get_parser():
              'to match the frequency specified in --freq.'
     )
     parser.add_argument(
+        '-rtm', '--real-time-multiplier', type=float,
+        help='Speed up real time producer of prices by a factor. '
+             'Default=1.0 (actual time).'
+    )
+    parser.add_argument(
         '-v', dest='verbosity', action='count', default=0,
         help='Enable more verbose logging (can be specified multiple '
              'times to increase verbosity)'
@@ -165,7 +170,7 @@ def main():
                 except BufferError:
                     producer.poll(10)
         LOGGER.debug('Producing to %s on %s', args.topic, args.broker_list)
-        _run(sources, timestamp, freq, args.real_time, _produce)
+        _run(sources, timestamp, freq, args.real_time, args.real_time_multiplier, _produce)
         producer.flush()
 
 

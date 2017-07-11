@@ -71,6 +71,8 @@ class Context:
         # TODO: Need to check for a global state here
         #       This is the reason that processors access store through context
 
+        if not name in self.currentNode.state_stores:
+            raise KafkaStreamsError(f"Processor {currentNode.name} does not have access to store {name}")
         if not name in self._state_stores:
             raise KafkaStreamsError(f"Store {name} is not found")
 

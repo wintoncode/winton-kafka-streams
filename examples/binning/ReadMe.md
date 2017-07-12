@@ -2,7 +2,7 @@
 
 ## Additional Python Package
 
-In addition to the packages required by the Kafka Streams package, you
+In addition to the packages required by the Winton Kafka Streams package, you
 will also need to have `pandas` available.  See also `live-plot.ipynb`
 for a jupyter notebook visualising this example (it additionally
 requires `jupyter` and `bokeh`).
@@ -57,7 +57,7 @@ produced 60000 values.
 
 ## Run binning
 
-Now run the Kafka Streams application that consumes the price topic:
+Now run the Winton Kafka Streams application that consumes the price topic:
 
     python -u binning.py --config-file config.properties
 

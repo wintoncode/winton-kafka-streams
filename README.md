@@ -47,7 +47,7 @@ are required for development only and not for running the package.
 
 Tests will run when py.test is called inside the root of the repository.
 
-## Contributing
+## Contributing
 Please see the CONTRIBUTING.md document for more details on getting involved. 
 
 ## Contact

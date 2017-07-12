@@ -1,5 +1,5 @@
 """
-Configuration values that may be set to control behaviour of Kafka Streams
+Configuration values that may be set to control behaviour of Winton Kafka Streams
 
 Configuration may either be set inline in your application using:
 
@@ -109,7 +109,7 @@ Importance: Medium
 VALUE_SERDE = None # TODO
 
 """
-A host:port pair pointing to an embedded user defined endpoint that can be used for discovering the locations of state stores within a single Kafka Streams application. The value of this must be different for each instance of the application.
+A host:port pair pointing to an embedded user defined endpoint that can be used for discovering the locations of state stores within a single Winton Kafka Streams application. The value of this must be different for each instance of the application.
 Default ""
 Importance: Low
 """
@@ -123,7 +123,7 @@ Importance: Low
 BUFFERED_RECORDS_PER_PARTITION = 1000
 
 """
-An id string to pass to the server when making requests. (This setting is passed to the consumer/producer clients used internally by Kafka Streams.)
+An id string to pass to the server when making requests. (This setting is passed to the consumer/producer clients used internally by Winton Kafka Streams.)
 Default: ""
 Importance: Low
 """

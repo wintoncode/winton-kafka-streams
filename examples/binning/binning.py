@@ -71,8 +71,9 @@ class Binning(BaseProcessor):
         if last_bin is not None:
             last_bin_ts, last_price = last_bin.decode('utf-8').split(',')
             if last_bin_ts != bin_ts.isoformat():
-                LOGGER.debug('Forwarding to sink  (%s, %s)', symbol, last_bin)
-                self.context.forward(symbol, last_bin)
+                key = '{},{}'.format(last_bin_ts, symbol).encode('utf-8')
+                LOGGER.debug('Forwarding to sink  (%s, %s)', key, last_price)
+                self.context.forward(key, last_price)
                 self.context.commit() # TODO: implement auto-commit, remove this
 
         self.bins[symbol] = bin_ts_and_price

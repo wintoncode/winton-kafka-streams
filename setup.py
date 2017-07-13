@@ -23,7 +23,7 @@ test_requirements = [
 setup(
     name='Winton Kafka Streams',
     version='0.1.0',
-    description="Kafka Streams for Python",
+    description="Apache Kafka's Streams API for Python",
     long_description=readme,
     author="Winton Group",
     author_email='opensource@winton.com',
@@ -44,5 +44,9 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=test_requirements,
+    extras_require={
+        'develop': ['pytest'],
+        'binning_example': ['jupyter', 'pandas', 'bokeh'],
+    }
 )

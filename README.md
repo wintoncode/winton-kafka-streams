@@ -1,20 +1,20 @@
 # Winton Kafka Streams
 
-Implementation of [Apache Kafka's streams API](https://kafka.apache.org/documentation/streams/) in Python. 
+Implementation of [Apache Kafka's Streams API](https://kafka.apache.org/documentation/streams/) in Python. 
 
 ## What and why?
 Apache Kafka is an open-source stream processing platform developed
 by the Apache Software Foundation written in Scala and Java. Kafka
-has streams API added for building stream processing applications
-using Apache Kafka. Applications built with Kafka's streams API do not require any
+has Streams API added for building stream processing applications
+using Apache Kafka. Applications built with Kafka's Streams API do not require any
 setup beyond the provision of a Kafka cluster.
 
 Winton Kafka Streams is a Python implementation of Apache Kafka's
-streams API. It builds on Confluent's librdkafka (a high
+Streams API. It builds on Confluent's librdkafka (a high
 performance C library implementing the Kafka protocol) and the
 Confluent Python Kafka library to achieve this.
 
-The power and simplicity of both Python and Kafka's streams API combined
+The power and simplicity of both Python and Kafka's Streams API combined
 opens the streaming model to many more people and applications.
 
 ## Getting started

@@ -36,14 +36,10 @@ class Binning(BaseProcessor):
           support.
     """
 
-    def __init__(self):
-        super().__init__()
-        self.store = None
-
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
-        self.store = {}  # TODO: Replace with self.context.get_store(")
-        self.context.schedule(60)
+        # bins tracks last time bin and price per symbol
+        self.bins = {}  # TODO: Replace with self.context.get_store(")
 
     def process(self, _, value):
         """
@@ -61,30 +57,25 @@ class Binning(BaseProcessor):
         --------
           None
         """
-        timestamp, name, price = value.decode('utf-8').split(',')
+        timestamp, symbol, price = value.decode('utf-8').split(',')
         timestamp = pd.Timestamp(timestamp)
 
         bin_ts = pd.Timestamp(
             year=timestamp.year, month=timestamp.month, day=timestamp.day,
             hour=timestamp.hour, minute=timestamp.minute, second=0
         ) + pd.Timedelta('1min')
-        key = '{},{}'.format(bin_ts.isoformat(), name).encode('utf-8')
+        bin_ts_and_price = '{},{}'.format(bin_ts.isoformat(), price).encode('utf-8')
 
-        if key not in self.store and len(self.store) == 2:
-            self.punctuate(0)  # TODO need a better way to do that
-            self.context.commit()
+        last_bin = self.bins.get(symbol)
 
-        self.store[key] = price.encode('utf-8')
+        if last_bin is not None:
+            last_bin_ts, last_price = last_bin.decode('utf-8').split(',')
+            if last_bin_ts != bin_ts.isoformat():
+                LOGGER.debug('Forwarding to sink  (%s, %s)', symbol, last_bin)
+                self.context.forward(symbol, last_bin)
+                self.context.commit() # TODO: implement auto-commit, remove this
 
-    def punctuate(self, timestamp):
-        """Produce output"""
-        # TODO: the key is currently symbol/timestamp, we should
-        # use a custom partitioner to ensure bins are partitioned by
-        # symbol only. We'd like to keep timestamp in the key though.
-        for k in sorted(self.store):
-            self.context.forward(k, self.store[k])
-            LOGGER.debug('Forwarding to sink  (%s, %s)', k, self.store[k])
-        self.store = {}
+        self.bins[symbol] = bin_ts_and_price
 
 
 def run(config_file = None):

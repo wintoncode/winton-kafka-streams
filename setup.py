@@ -44,5 +44,9 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=test_requirements,
+    extras_require={
+        'develop': ['pytest'],
+        'binning_example': ['jupyter', 'pandas', 'bokeh'],
+    }
 )

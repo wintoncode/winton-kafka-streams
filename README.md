@@ -31,21 +31,27 @@ recommended.
 
 Cloning the Winton Kafka Streams repository from GitHub is
 recommended if you want to contribute to the project. Use: 
-`pip install --editable <path/to/winton_kafka_streams>`
-to install as an editable development workspace. 
+`pip install --editable <path/to/winton_kafka_streams>[develop]`
+to install as an editable workspace with additional dependencies
+required for development.
 
 If you want to install the code and get a feel for it as a user then
 we recommend using pip install which will pull the package from PyPI
-or your local mirror. 
+or your local mirror.
 
 ### Running tests
-You will need to install these dependencies manually into your environment:
- - pytest
+Tests will run when py.test is called in the root of the repository.
 
-We chose not to add these dependencies to the pip requirements as they
-are required for development only and not for running the package. 
+### Running examples
+To run examples, you must have cloned the code locally from GitHub.
 
-Tests will run when py.test is called inside the root of the repository.
+The debug and wordcount examples will run without further additional
+requirements.
+
+The Jupyter notebook in the binning example requires some additional
+packages. Install these with the command:
+
+pip install <path/to/winton_kafka_streams>[binning_example]
 
 ## Contributing
 Please see the CONTRIBUTING.md document for more details on getting involved. 

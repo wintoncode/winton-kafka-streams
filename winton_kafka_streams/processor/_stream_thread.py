@@ -13,8 +13,32 @@ from confluent_kafka import KafkaError, TopicPartition
 
 from ._record_collector import RecordCollector
 from .processor_context import ProcessorContext
+from ._punctuation_queue import PunctuationQueue
+from .wallclock_timestamp import WallClockTimeStampExtractor
 
 log = logging.getLogger(__name__)
+
+
+class DummyRecord:
+    """
+    Dummy implementation of Record that provides the minimum needed
+    to supply a timestamp to Context during punctuate.
+    """
+    def __init__(self, timestamp):
+        self._timestamp = timestamp
+
+    def topic(self):
+        return '__null_topic__'
+
+    def partition(self):
+        return -1
+
+    def offset(self):
+        return -1
+
+    def timestamp(self):
+        return self._timestamp
+
 
 class StreamTask:
     """
@@ -35,6 +59,10 @@ class StreamTask:
 
         self.queue = queue.Queue()
         self.context = ProcessorContext(self, self.recordCollector, self.topology.state_stores)
+
+        self.punctuation_queue = PunctuationQueue(self.punctuate)
+        self.timestamp_extractor = WallClockTimeStampExtractor()
+        self.current_timestamp = None
 
         self.needCommit = False
         self.consumedOffsets = {}
@@ -60,6 +88,7 @@ class StreamTask:
 
         record = self.queue.get()
         self.context.currentRecord = record
+        self.current_timestamp = self.timestamp_extractor.extract(record, self.current_timestamp)
 
         # TODO: FIXME-  assumes only one topic (next two lines)
         self.context.currentNode = self.topology.sources[0]
@@ -68,6 +97,23 @@ class StreamTask:
         self.consumedOffsets[(record.topic(), record.partition())] = record.offset()
 
         self.context.currentRecord = None
+        self.context.currentNode = None
+
+    def maybe_punctuate(self):
+        timestamp = self.current_timestamp
+
+        if timestamp is None:
+            return False
+
+        return self.punctuation_queue.may_punctuate(timestamp)
+
+    def punctuate(self, node, timestamp):
+        log.debug(f'Punctuating processor {node} at {timestamp}')
+        self.context.currentRecord = DummyRecord(timestamp)
+        self.context.currentNode = node
+        node.punctuate(timestamp)
+        self.context.currentRecord = None
+        self.context.currentNode = None
 
     def commit(self):
         # may be asked to commit on rebalance or shutdown but
@@ -79,6 +125,9 @@ class StreamTask:
             self.consumer.commit(offsets=[TopicPartition(t, p, o+1)], async=False)
         self.needCommit = False
         self.consumedOffsets.clear()
+
+    def schedule(self, interval):
+        self.punctuation_queue.schedule(self.context.currentNode, interval)
 
     def __repr__(self):
         return self.__class__.__name__ + f":{self.task_id}"
@@ -194,7 +243,8 @@ class StreamThread:
                     continue
                 elif not record.error():
                     log.debug('Received message: %s', record.value().decode('utf-8'))
-                    self.processAndPunctuate(record)
+                    self.add_records_to_tasks([record])
+                    self.process_and_punctuate()
                 elif record.error().code() == KafkaError._PARTITION_EOF:
                     continue
                 elif record.error():
@@ -205,12 +255,18 @@ class StreamThread:
             self.commitAll()
             self.shutdown()
 
-    def processAndPunctuate(self, record):
-        task = self.tasks[record.partition()]
-        task.add_records([record])
-        task.process()
-        if task.needCommit:
-            self.commit(task)
+    def add_records_to_tasks(self, records):
+        for record in records:
+            self.tasks[record.partition()].add_records([record])
+
+    def process_and_punctuate(self):
+        for task in self.tasks:
+            task.process()
+
+        for task in self.tasks:
+            task.maybe_punctuate()
+            if task.needCommit:
+                self.commit(task)
 
     def commit(self, task):
         try:

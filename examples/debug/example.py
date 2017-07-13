@@ -26,6 +26,7 @@ class DoubleProcessor(BaseProcessor):
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
         self.store = self.context.get_store("double-store")
+        self.context.schedule(1)
 
     def process(self, key, value):
         log.debug(f'DoubleProcessor::process({key}, {value})')
@@ -38,18 +39,13 @@ class DoubleProcessor(BaseProcessor):
             return
         self.store.add(key, str(doubled))
 
-        # TODO: In absence of a punctuate call schedule running:
-        if len(self.store) == 4:
-            self.punctuate()
-
-            self.context.commit()
-
-    def punctuate(self):
-        log.debug('DoubleProcessor::punctuate')
+    def punctuate(self, timestamp):
+        log.debug(f'DoubleProcessor::punctuate({timestamp})')
         for k, v in iter(self.store):
-            log.debug('Forwarding to sink  (%s, %s)', k, v)
+            log.debug('Forwarding to sink (%s, %s)', k, v)
             self.context.forward(k, v)
         self.store.clear()
+        self.context.commit()
 
 
 def _debug_run(config_file):

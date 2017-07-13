@@ -32,7 +32,7 @@ class SourceProcessor(BaseProcessor):
     def process(self, key, value):
         self.context.forward(key, value)
 
-    def punctuate(self):
+    def punctuate(self, timestamp):
         pass
 
 class SinkProcessor(BaseProcessor):
@@ -49,7 +49,7 @@ class SinkProcessor(BaseProcessor):
     def process(self, key, value):
         self._send(key, value, self.context.timestamp)
 
-    def punctuate(self):
+    def punctuate(self, timestamp):
         pass
 
     def _send(self, key, value, timestamp):

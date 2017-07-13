@@ -15,25 +15,29 @@ import winton_kafka_streams.kafka_stream as kafka_stream
 
 log = logging.getLogger(__name__)
 
+# An example implementation of word count,
+# showing where punctuate can be useful
 class WordCount(BaseProcessor):
-    def __init__(self):
-        super().__init__()
-        self.store = None
 
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
-        self.store = collections.Counter()
+        self.word_counts = collections.Counter()
+        # dirty_words tracks what words have changed since the last punctuate
+        self.dirty_words = set()
+        # output updated counts every 10 seconds
+        self.context.schedule(10.)
 
     def process(self, key, value):
-        self.store.update(value.decode('utf-8').split())
-
-        # TODO: In absence of a punctuate call schedule running:
-        self.punctuate(0)
+        words = value.decode('utf-8').split()
+        self.word_counts.update(words)
+        self.dirty_words = self.dirty_words.union(words)
 
     def punctuate(self, timestamp):
-        for k, v in self.store.items():
-            log.debug('Forwarding to sink  (%s, %s)', k, v)
-            self.context.forward(k, str(v))
+        for word in self.dirty_words:
+            count = str(self.word_counts[word])
+            log.debug(f'Forwarding to sink ({word}, {count})')
+            self.context.forward(word, count)
+        self.dirty_words.clear()
 
 
 def run(config_file):

@@ -254,22 +254,37 @@ class StreamThread:
             self.consumer.subscribe(self.topics, on_assign=self.on_assign, on_revoke=self.on_revoke)
 
             while self.still_running():
-                record = self.consumer.poll(0.1)
-                if record is None:
-                    continue
-                elif not record.error():
-                    log.debug('Received message: %s', record.value().decode('utf-8'))
-                    self.add_records_to_tasks([record])
+                records = self.poll_requests(0.1)
+                if records:
+                    log.debug(f'Processing {len(records)} record(s)')
+                    self.add_records_to_tasks(records)
                     self.process_and_punctuate()
-                elif record.error().code() == KafkaError._PARTITION_EOF:
-                    continue
-                elif record.error():
-                    log.error('Record error received: %s', record.error())
 
             log.debug('Ending stream thread...')
         finally:
             self.commitAll()
             self.shutdown()
+
+    def poll_requests(self, poll_timeout):
+        """ Get the next batch of records """
+
+        # The current python kafka client gives us messages one by one,
+        # but for better throughput we want to process many records at once.
+        # Keep polling until we get no more records out.
+        records = []
+        record = self.consumer.poll(poll_timeout)
+        while record is not None:
+            if not record.error():
+                log.debug('Received message: %s', record.value().decode('utf-8'))
+                records.append(record)
+                record = self.consumer.poll(0.)
+            elif record.error().code() == KafkaError._PARTITION_EOF:
+                record = self.consumer.poll(0.)
+            elif record.error():
+                log.error('Record error received: %s', record.error())
+
+        return records
+
 
     def add_records_to_tasks(self, records):
         for record in records:

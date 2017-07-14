@@ -22,7 +22,8 @@ test_requirements = [
 
 setup(
     name='Winton Kafka Streams',
-    version='0.1.0',
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     description="Apache Kafka's Streams API for Python",
     long_description=readme,
     author="Winton Group",

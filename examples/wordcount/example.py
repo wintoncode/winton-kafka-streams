@@ -30,14 +30,14 @@ class WordCount(BaseProcessor):
     def process(self, key, value):
         words = value.decode('utf-8').split()
         self.word_counts.update(words)
-        self.dirty_words = self.dirty_words.union(words)
+        self.dirty_words |= set(words)
 
     def punctuate(self, timestamp):
         for word in self.dirty_words:
             count = str(self.word_counts[word])
             log.debug(f'Forwarding to sink ({word}, {count})')
             self.context.forward(word, count)
-        self.dirty_words.clear()
+        self.dirty_words = set()
 
 
 def run(config_file):

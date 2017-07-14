@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Winton Kafka Streams Python's documentation!
-===============================================
+=======================================================
 
 .. toctree::
    :maxdepth: 2

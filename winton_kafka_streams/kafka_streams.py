@@ -11,7 +11,7 @@ from .kafka_client_supplier import KafkaClientSupplier
 log = logging.getLogger(__name__)
 
 
-class KafkaStream:
+class KafkaStreams:
     """
     Encapsulates stream graph processing units
 

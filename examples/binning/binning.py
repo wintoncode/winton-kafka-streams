@@ -97,7 +97,7 @@ def run(config_file = None):
             processor('binner', Binning, 'prices'). \
             sink('result', 'bin-prices', 'binner')
 
-    wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
+    wks = kafka_stream.KafkaStreams(topology_builder, kafka_config)
     wks.start()
     try:
         while True:

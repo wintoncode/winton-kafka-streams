@@ -52,7 +52,7 @@ def run(config_file):
             processor('count', WordCount, 'input-value'). \
             sink('output-count', 'wks-wordcount-example-count', 'count')
 
-    wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
+    wks = kafka_stream.KafkaStreams(topology_builder, kafka_config)
     wks.start()
     try:
         while True:

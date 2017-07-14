@@ -47,7 +47,7 @@ def _debug_run(config_file):
             sink('output-double', 'wks-debug-example-output', 'double'). \
             state_store('double-store', SimpleStore, 'double')
 
-    wks = kafka_stream.KafkaStream(topology_builder, kafka_config)
+    wks = kafka_stream.KafkaStreams(topology_builder, kafka_config)
     wks.start()
     try:
         while True:

@@ -83,12 +83,30 @@ class KafkaStreams:
         self.topology = topology
         self.kafka_config = kafka_config
 
+        self.state = self.State.CREATED
+
         self.consumer = None
 
         self.stream_thread = StreamThread(topology, kafka_config, KafkaClientSupplier(self.kafka_config))
 
+    def set_state(self, new_state):
+        old_state = self.state
+        if not old_state.valid_transition_to(new_state):
+            log.warn(f'Unexpected state transition from {old_state} to {new_state}.')
+        else:
+            log.info(f'State transition from {old_state} to {new_state}.')
+        self.state = new_state
+
     def start(self):
-        self.stream_thread.start()
+        log.debug('Starting Kafka Streams process')
+        if self.state == self.State.CREATED:
+            self.set_state(self.State.RUNNING)
+            self.stream_thread.start()
+        else:
+            raise KafkaStreamsError('KafkaStreams already started')
 
     def close(self):
-        self.stream_thread.close()
+        if self.state.is_created_or_running():
+            self.set_state(self.State.PENDING_SHUTDOWN)
+            self.stream_thread.close()
+            self.set_state(self.State.NOT_RUNNING)

@@ -47,7 +47,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     extras_require={
-        'develop': ['pytest'],
+        'develop': ['pytest', 'sphinx_rtd_theme'],
         'binning_example': ['jupyter', 'pandas', 'bokeh'],
     }
 )

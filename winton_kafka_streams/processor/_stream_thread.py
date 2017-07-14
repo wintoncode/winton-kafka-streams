@@ -86,7 +86,6 @@ class StreamThread:
         self.state = self.State.NOT_RUNNING
 
         self.topics = _topology.topics
-        self.thread = threading.Thread(target=self.run)
 
         self.thread = threading.Thread(target=self.run)
         self.log = logging.getLogger(__name__ + '(' + self.thread.name + ')')

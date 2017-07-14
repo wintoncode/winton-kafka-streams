@@ -84,6 +84,7 @@ class KafkaStreams:
         self.kafka_config = kafka_config
 
         self.state = self.State.CREATED
+        self.thread_states = {}
 
         self.consumer = None
 
@@ -97,11 +98,20 @@ class KafkaStreams:
             log.info(f'State transition from {old_state} to {new_state}.')
         self.state = new_state
 
+    def on_thread_state_change(self, stream_thread, old_state, new_state):
+        self.thread_states[stream_thread.thread_id()] = new_state
+        if new_state in (StreamThread.State.ASSIGNING_PARTITIONS, StreamThread.State.PARTITIONS_REVOKED):
+            self.set_state(self.State.REBALANCING)
+        elif set(self.thread_states.values()) == set([StreamThread.State.RUNNING]):
+                self.set_state(self.State.RUNNING)
+
     def start(self):
         log.debug('Starting Kafka Streams process')
         if self.state == self.State.CREATED:
             self.set_state(self.State.RUNNING)
             self.stream_thread.start()
+            self.stream_thread.set_state_listener(self.on_thread_state_change)
+            self.thread_states[self.stream_thread.thread_id()] = self.stream_thread.state
         else:
             raise KafkaStreamsError('KafkaStreams already started')
 

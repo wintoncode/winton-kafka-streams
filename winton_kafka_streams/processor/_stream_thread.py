@@ -93,7 +93,11 @@ class StreamThread:
         self.consumer = self.kafka_supplier.consumer()
 
         self.thread = threading.Thread(target=self.run)
+        self.state_listener = None
         self.set_state(self.State.RUNNING)
+
+    def thread_id(self):
+        return self.thread.ident
 
     def set_state(self, new_state):
         old_state = self.state
@@ -102,10 +106,16 @@ class StreamThread:
         else:
             log.info(f'State transition from {old_state} to {new_state}.')
         self.state = new_state
+        if self.state_listener:
+            self.state_listener(self, old_state, new_state)
 
     def set_state_when_not_in_pending_shutdown(self, new_state):
         if not self.state is self.State.PENDING_SHUTDOWN:
             self.set_state(new_state)
+
+    def set_state_listener(self, listener):
+        """ For internal use only. """
+        self.state_listener = listener
 
     def still_running(self):
         return self.state.is_running()

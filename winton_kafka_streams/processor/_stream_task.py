@@ -1,7 +1,5 @@
 import queue
 import logging
-import threading
-from enum import Enum
 
 from confluent_kafka import TopicPartition
 
@@ -10,7 +8,6 @@ from .processor_context import ProcessorContext
 from ._punctuation_queue import PunctuationQueue
 from .wallclock_timestamp import WallClockTimeStampExtractor
 
-log = logging.getLogger(__name__)
 
 
 class DummyRecord:
@@ -42,6 +39,7 @@ class StreamTask:
 
     """
     def __init__(self, _task_id, _application_id, _partitions, _topology_builder, _consumer, _producer):
+        self.log = logging.getLogger(__name__ + '(' + str(_task_id) + ')')
         self.task_id = _task_id
         self.application_id = _application_id
         self.partitions = _partitions
@@ -106,7 +104,7 @@ class StreamTask:
         return self.punctuation_queue.may_punctuate(timestamp)
 
     def punctuate(self, node, timestamp):
-        log.debug(f'Punctuating processor {node} at {timestamp}')
+        self.log.debug(f'Punctuating processor {node} at {timestamp}')
         self.context.currentRecord = DummyRecord(timestamp)
         self.context.currentNode = node
         node.punctuate(timestamp)

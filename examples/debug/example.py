@@ -20,13 +20,6 @@ class DoubleProcessor(BaseProcessor):
     Example processor that will double the value passed in
 
     """
-    def __init__(self):
-        super().__init__()
-
-    def initialise(self, _name, _context):
-        super().initialise(_name, _context)
-        self.store = self.context.get_store("double-store")
-        self.context.schedule(1)
 
     def process(self, key, value):
         log.debug(f'DoubleProcessor::process({key}, {value})')
@@ -37,15 +30,8 @@ class DoubleProcessor(BaseProcessor):
         except ValueError as ve:
             log.exception(ve)
             return
-        self.store.add(key, str(doubled))
-
-    def punctuate(self, timestamp):
-        log.debug(f'DoubleProcessor::punctuate({timestamp})')
-        for k, v in iter(self.store):
-            log.debug('Forwarding to sink (%s, %s)', k, v)
-            self.context.forward(k, v)
-        self.store.clear()
-        self.context.commit()
+        log.debug(f'Forwarding to sink ({key}, {str(doubled)})')
+        self.context.forward(key, str(doubled))
 
 
 def _debug_run(config_file):

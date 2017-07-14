@@ -11,7 +11,7 @@ import collections
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
-import winton_kafka_streams.kafka_stream as kafka_stream
+import winton_kafka_streams.kafka_streams as kafka_streams
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def run(config_file):
             processor('count', WordCount, 'input-value'). \
             sink('output-count', 'wks-wordcount-example-count', 'count')
 
-    wks = kafka_stream.KafkaStreams(topology_builder, kafka_config)
+    wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)
     wks.start()
     try:
         while True:

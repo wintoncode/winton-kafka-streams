@@ -64,7 +64,8 @@ class StreamTask:
         self.timestamp_extractor = WallClockTimeStampExtractor()
         self.current_timestamp = None
 
-        self.needCommit = False
+        self.commitRequested = False
+        self.commitOffsetNeeded = False
         self.consumedOffsets = {}
 
         self._init_topology(self.context)
@@ -95,9 +96,12 @@ class StreamTask:
         self.topology.sources[0].process(record.key(), record.value())
 
         self.consumedOffsets[(record.topic(), record.partition())] = record.offset()
+        self.commitOffsetNeeded = True
 
         self.context.currentRecord = None
         self.context.currentNode = None
+
+        return True
 
     def maybe_punctuate(self):
         timestamp = self.current_timestamp
@@ -116,15 +120,27 @@ class StreamTask:
         self.context.currentNode = None
 
     def commit(self):
+        self.recordCollector.flush()
+        self.commitOffsets()
+
+    def commitOffsets(self):
+        """ Commit consumed offsets if needed """
+
         # may be asked to commit on rebalance or shutdown but
         # should only commit if the processor has requested.
-        if not self.needCommit:
-            return
+        if self.commitOffsetNeeded:
+            offsetsToCommit = [TopicPartition(t, p, o+1) for ((t, p), o) in self.consumedOffsets.items()]
+            self.consumer.commit(offsets=offsetsToCommit, async=False)
+            self.consumedOffsets.clear()
+            self.commitOffsetNeeded = False
 
-        for ((t, p), o) in self.consumedOffsets.items():
-            self.consumer.commit(offsets=[TopicPartition(t, p, o+1)], async=False)
-        self.needCommit = False
-        self.consumedOffsets.clear()
+        self.commitRequested = False
+
+    def commitNeeded(self):
+        return self.commitRequested
+
+    def needCommit(self):
+        self.commitRequested = True
 
     def schedule(self, interval):
         self.punctuation_queue.schedule(self.context.currentNode, interval)
@@ -238,34 +254,56 @@ class StreamThread:
             self.consumer.subscribe(self.topics, on_assign=self.on_assign, on_revoke=self.on_revoke)
 
             while self.still_running():
-                record = self.consumer.poll(0.1)
-                if record is None:
-                    continue
-                elif not record.error():
-                    log.debug('Received message: %s', record.value().decode('utf-8'))
-                    self.add_records_to_tasks([record])
+                records = self.poll_requests(0.1)
+                if records:
+                    log.debug(f'Processing {len(records)} record(s)')
+                    self.add_records_to_tasks(records)
                     self.process_and_punctuate()
-                elif record.error().code() == KafkaError._PARTITION_EOF:
-                    continue
-                elif record.error():
-                    log.error('Record error received: %s', record.error())
 
             log.debug('Ending stream thread...')
         finally:
             self.commitAll()
             self.shutdown()
 
+    def poll_requests(self, poll_timeout):
+        """ Get the next batch of records """
+
+        # The current python kafka client gives us messages one by one,
+        # but for better throughput we want to process many records at once.
+        # Keep polling until we get no more records out.
+        records = []
+        record = self.consumer.poll(poll_timeout)
+        while record is not None:
+            if not record.error():
+                log.debug('Received message: %s', record.value().decode('utf-8'))
+                records.append(record)
+                record = self.consumer.poll(0.)
+            elif record.error().code() == KafkaError._PARTITION_EOF:
+                record = self.consumer.poll(0.)
+            elif record.error():
+                log.error('Record error received: %s', record.error())
+
+        return records
+
+
     def add_records_to_tasks(self, records):
         for record in records:
             self.tasks[record.partition()].add_records([record])
 
     def process_and_punctuate(self):
-        for task in self.tasks:
-            task.process()
+        while True:
+            total_processed_each_round = 0
+
+            for task in self.tasks:
+                if task.process():
+                    total_processed_each_round += 1
+
+            if total_processed_each_round == 0:
+                break
 
         for task in self.tasks:
             task.maybe_punctuate()
-            if task.needCommit:
+            if task.commitNeeded():
                 self.commit(task)
 
     def commit(self, task):

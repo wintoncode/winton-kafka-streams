@@ -1,6 +1,6 @@
 # Winton Kafka Streams
 
-[![Build Status](https://travis-ci.org/wintoncode/winton-kafka-streams.svg?branch=master)](https://travis-ci.org/winton-code/winton-kafka-streams)
+[![Build Status](https://travis-ci.org/wintoncode/winton-kafka-streams.svg?branch=master)](https://travis-ci.org/wintoncode/winton-kafka-streams)
 
 Implementation of [Apache Kafka's Streams API](https://kafka.apache.org/documentation/streams/) in Python.
 

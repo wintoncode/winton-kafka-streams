@@ -7,6 +7,7 @@ Main entrypoints
 
 import logging
 import time
+import sys
 import collections
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
@@ -29,6 +30,7 @@ class WordCount(BaseProcessor):
 
     def process(self, key, value):
         words = value.decode('utf-8').split()
+        log.debug(f'words list ({words})')
         self.word_counts.update(words)
         self.dirty_words |= set(words)
 
@@ -45,13 +47,12 @@ def run(config_file):
 
     # Can also directly set config variables inline in Python
     #kafka_config.KEY_SERDE = MySerde
-
     with TopologyBuilder() as topology_builder:
         topology_builder. \
             source('input-value', ['wks-wordcount-example-topic']). \
             processor('count', WordCount, 'input-value'). \
             sink('output-count', 'wks-wordcount-example-count', 'count')
-
+            
     wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)
     wks.start()
     try:
@@ -76,6 +77,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     levels = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
-    logging.basicConfig(level=levels.get(args.verbose, logging.DEBUG))
-
+    level = levels.get(args.verbose, logging.DEBUG)
+    logging.basicConfig(stream=sys.stdout, level=level)
     run(args.config_file)

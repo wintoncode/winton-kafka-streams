@@ -1,6 +1,8 @@
 # Winton Kafka Streams
 
-Implementation of [Apache Kafka's Streams API](https://kafka.apache.org/documentation/streams/) in Python. 
+[![Build Status](https://travis-ci.org/wintoncode/winton-kafka-streams.svg?branch=master)](https://travis-ci.org/wintoncode/winton-kafka-streams)
+
+Implementation of [Apache Kafka's Streams API](https://kafka.apache.org/documentation/streams/) in Python.
 
 ## What and why?
 Apache Kafka is an open-source stream processing platform developed
@@ -24,13 +26,13 @@ The minimum Python version is currently 3.6 and a working Kafka
 cluster (a single replica is sufficient for testing) are required.
 
 Confluent Python Kafka is also required and it should install
-as a dependency by pip. If it fails during installation, 
-then we recommend installing librdkafka with HomeBrew and setting 
+as a dependency by pip. If it fails during installation,
+then we recommend installing librdkafka with HomeBrew and setting
 `CFLAGS=-I/usr/local/include` and `LDFLAGS=-L/usr/local/lib` is
-recommended. 
+recommended.
 
 Cloning the Winton Kafka Streams repository from GitHub is
-recommended if you want to contribute to the project. Use: 
+recommended if you want to contribute to the project. Use:
 `pip install --editable <path/to/winton_kafka_streams>[develop]`
 to install as an editable workspace with additional dependencies
 required for development.
@@ -54,7 +56,7 @@ packages. Install these with the command:
 pip install <path/to/winton_kafka_streams>[binning_example]
 
 ## Contributing
-Please see the CONTRIBUTING.md document for more details on getting involved. 
+Please see the CONTRIBUTING.md document for more details on getting involved.
 
 ## Contact
  - GitHub: https://github.com/wintoncode/

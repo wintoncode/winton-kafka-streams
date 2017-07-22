@@ -1,0 +1,42 @@
+version: '2'
+services:
+  wordcount:
+    build:
+      context: ../../../
+      dockerfile: examples/wordcount/docker/wordcount/Dockerfile
+    volumes:
+     - ../../../:/code
+    depends_on:
+      - kafka
+  source_client:
+    build:
+      context: ../../../
+      dockerfile: examples/wordcount/docker/source_client/Dockerfile
+    volumes:
+     - ../../../:/code
+    depends_on:
+      - kafka
+  kafka:
+    image: "spotify/kafka"
+    hostname: kafka
+    ports:
+     - 2181:2181
+     - 9092:9092
+     - 7203:7203
+    environment:
+      - JMX_PORT=7203
+      - ADVERTISED_HOST=kafka
+      - ADVERTISED_PORT=9092
+  kafka-manager:
+    image: "sheepkiller/kafka-manager"
+    ports:
+     - 9000:9000
+    environment:
+     - ZK_HOSTS=kafka:2181
+     - APPLICATION_SECRET=letmein
+  kafka-debug:
+    build:
+      context: ../../../
+      dockerfile: examples/wordcount/docker/kafka-debug/Dockerfile
+    depends_on:
+      - kafka

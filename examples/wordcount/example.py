@@ -52,6 +52,7 @@ def run(config_file):
             source('input-value', ['wks-wordcount-example-topic']). \
             processor('count', WordCount, 'input-value'). \
             sink('output-count', 'wks-wordcount-example-count', 'count')
+            
     wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)
     wks.start()
     try:

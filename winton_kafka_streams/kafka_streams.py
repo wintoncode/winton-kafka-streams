@@ -4,6 +4,7 @@ Primary entrypoint for applications wishing to implement Python Kafka Streams
 """
 
 import logging
+import threading
 from enum import Enum
 
 from .processor import StreamThread
@@ -84,11 +85,16 @@ class KafkaStreams:
         self.kafka_config = kafka_config
 
         self.state = self.State.CREATED
+        self.state_lock = threading.Lock()
         self.thread_states = {}
 
         self.consumer = None
 
-        self.stream_thread = StreamThread(topology, kafka_config, KafkaClientSupplier(self.kafka_config))
+        self.stream_threads = [StreamThread(topology, kafka_config, KafkaClientSupplier(self.kafka_config))
+                               for i in range(int(self.kafka_config.NUM_STREAM_THREADS))]
+        for stream_thread in self.stream_threads:
+            stream_thread.set_state_listener(self.on_thread_state_change)
+            self.thread_states[stream_thread.thread_id()] = stream_thread.state
 
     def set_state(self, new_state):
         old_state = self.state
@@ -99,24 +105,26 @@ class KafkaStreams:
         self.state = new_state
 
     def on_thread_state_change(self, stream_thread, old_state, new_state):
-        self.thread_states[stream_thread.thread_id()] = new_state
-        if new_state in (StreamThread.State.ASSIGNING_PARTITIONS, StreamThread.State.PARTITIONS_REVOKED):
-            self.set_state(self.State.REBALANCING)
-        elif set(self.thread_states.values()) == set([StreamThread.State.RUNNING]):
-                self.set_state(self.State.RUNNING)
+        with self.state_lock:
+            self.thread_states[stream_thread.thread_id()] = new_state
+            if new_state in (StreamThread.State.ASSIGNING_PARTITIONS, StreamThread.State.PARTITIONS_REVOKED):
+                self.set_state(self.State.REBALANCING)
+            elif set(self.thread_states.values()) == set([StreamThread.State.RUNNING]):
+                    self.set_state(self.State.RUNNING)
 
     def start(self):
         log.debug('Starting Kafka Streams process')
         if self.state == self.State.CREATED:
             self.set_state(self.State.RUNNING)
-            self.stream_thread.start()
-            self.stream_thread.set_state_listener(self.on_thread_state_change)
-            self.thread_states[self.stream_thread.thread_id()] = self.stream_thread.state
+            for stream_thread in self.stream_threads:
+                stream_thread.start()
         else:
             raise KafkaStreamsError('KafkaStreams already started')
 
     def close(self):
         if self.state.is_created_or_running():
             self.set_state(self.State.PENDING_SHUTDOWN)
-            self.stream_thread.close()
+            for stream_thread in self.stream_threads:
+                stream_thread.set_state_listener(None)
+                stream_thread.close()
             self.set_state(self.State.NOT_RUNNING)

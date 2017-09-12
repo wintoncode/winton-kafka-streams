@@ -11,8 +11,6 @@ from confluent_kafka import KafkaError
 
 from ._stream_task import StreamTask
 
-log = logging.getLogger(__name__)
-
 
 class StreamThread:
 
@@ -89,23 +87,35 @@ class StreamThread:
 
         self.topics = _topology.topics
 
-        log.info('Topics for consumer are: %s', self.topics)
+        self.thread = threading.Thread(target=self.run)
+        self.log = logging.getLogger(__name__ + '(' + self.thread.name + ')')
+
+        self.log.info('Topics for consumer are: %s', self.topics)
         self.consumer = self.kafka_supplier.consumer()
 
-        self.thread = threading.Thread(target=self.run)
+        self.state_listener = None
         self.set_state(self.State.RUNNING)
+
+    def thread_id(self):
+        return self.thread.ident
 
     def set_state(self, new_state):
         old_state = self.state
         if not old_state.valid_transition_to(new_state):
-            log.warn(f'Unexpected state transition from {old_state} to {new_state}.')
+            self.log.warn(f'Unexpected state transition from {old_state} to {new_state}.')
         else:
-            log.info(f'State transition from {old_state} to {new_state}.')
+            self.log.info(f'State transition from {old_state} to {new_state}.')
         self.state = new_state
+        if self.state_listener:
+            self.state_listener(self, old_state, new_state)
 
     def set_state_when_not_in_pending_shutdown(self, new_state):
         if not self.state is self.State.PENDING_SHUTDOWN:
             self.set_state(new_state)
+
+    def set_state_listener(self, listener):
+        """ For internal use only. """
+        self.state_listener = listener
 
     def still_running(self):
         return self.state.is_running()
@@ -114,18 +124,18 @@ class StreamThread:
         self.thread.start()
 
     def run(self):
-        log.debug('Running stream thread...')
+        self.log.debug('Running stream thread...')
         try:
             self.consumer.subscribe(self.topics, on_assign=self.on_assign, on_revoke=self.on_revoke)
 
             while self.still_running():
                 records = self.poll_requests(0.1)
                 if records:
-                    log.debug(f'Processing {len(records)} record(s)')
+                    self.log.debug(f'Processing {len(records)} record(s)')
                     self.add_records_to_tasks(records)
                     self.process_and_punctuate()
 
-            log.debug('Ending stream thread...')
+            self.log.debug('Ending stream thread...')
         finally:
             self.commitAll()
             self.shutdown()
@@ -140,13 +150,13 @@ class StreamThread:
         record = self.consumer.poll(poll_timeout)
         while record is not None:
             if not record.error():
-                log.debug('Received message: %s', record.value().decode('utf-8'))
+                self.log.debug('Received message: %s', record.value().decode('utf-8'))
                 records.append(record)
                 record = self.consumer.poll(0.)
             elif record.error().code() == KafkaError._PARTITION_EOF:
                 record = self.consumer.poll(0.)
             elif record.error():
-                log.error('Record error received: %s', record.error())
+                self.log.error('Record error received: %s', record.error())
 
         return records
 
@@ -173,14 +183,14 @@ class StreamThread:
 
     def commit(self, task):
         try:
-            log.debug('Commit task "%s"', task)
+            self.log.debug('Commit task "%s"', task)
             task.commit()
         except CommitFailedException as cfe:
-            log.warn('Failed to commit')
-            log.exception(cfe)
+            self.log.warn('Failed to commit')
+            self.log.exception(cfe)
             pass
         except KafkaException as ke:
-            log.exception(ke)
+            self.log.exception(ke)
             raise
 
     def commitAll(self):
@@ -201,19 +211,19 @@ class StreamThread:
                       in grouped_tasks.items()]
 
     def on_assign(self, consumer, partitions):
-        log.debug('Assigning partitions %s', partitions)
+        self.log.debug('Assigning partitions %s', partitions)
 
         self.set_state_when_not_in_pending_shutdown(self.State.ASSIGNING_PARTITIONS)
         self.add_stream_tasks(partitions)
         self.set_state_when_not_in_pending_shutdown(self.State.RUNNING)
 
     def on_revoke(self, consumer, partitions):
-        log.debug('Revoking partitions %s', partitions)
+        self.log.debug('Revoking partitions %s', partitions)
         self.commitAll()
         self.set_state_when_not_in_pending_shutdown(self.State.PARTITIONS_REVOKED)
         self.tasks = []
 
     def close(self):
-        log.debug('Closing stream thread and consumer')
+        self.log.debug('Closing stream thread and consumer')
         self.set_state(self.State.PENDING_SHUTDOWN)
         self.consumer.close()

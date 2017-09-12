@@ -11,9 +11,9 @@ from .._error import KafkaStreamsError
 log = logging.getLogger(__name__)
 
 class ProcessorNode:
-    def __init__(self, _name, _processor):
-        self.name = _name
-        self.processor = _processor
+    def __init__(self, name, processor):
+        self.name = name
+        self.processor = processor
         self.children = []
         self.state_stores = set()
 
@@ -31,45 +31,62 @@ class ProcessorNode:
 
 
 class Topology:
-    def __init__(self, _nodes, _sources, _processors, _sinks, _state_stores):
-        self.nodes = _nodes
-        self.sources = _sources
-        self.processors = _processors
-        self.sinks = _sinks
-        self.state_stores = _state_stores
+    """
+    A realised instance of a toplogy
+
+    """
+    def __init__(self, sources, processors, sinks, state_stores):
+        self.nodes = {}
+        self.sources = {}
+        sources_list = [source_builder(self) for source_builder in sources]
+        for source_node in sources_list:
+            for topic in source_node.processor.topics:
+                if topic in self.sources:
+                    raise KafkaStreamsError(f'Topic {topic} associated with more than one Source Processor')
+                self.sources[topic] = source_node
+
+        self.processors = [processor_builder(self) for processor_builder in processors]
+        self.sinks = [sink_builder(self) for sink_builder in sinks]
+
+        self.state_stores = {}
+        for state_builder in self.state_stores:
+            (self.state_stores[state_builder.name()], processors) = state_builder()
+            for p in processors:
+                nodes[p].state_stores.add(state_builder.name())
+
+    def _add_node(self, name, processor, inputs=[]):
+        if name in self.nodes:
+            raise KafkaStreamsError(f"A processor with the name '{name}' already added to this topology")
+        self.nodes[name] = processor
+
+        node_inputs = list(self.nodes[i] for i in inputs)
+
+        if any(n.name == name for n in node_inputs):
+            raise KafkaStreamsError("A processor cannot have itself as an input")
+        if any(n.name not in self.nodes for n in node_inputs):
+            raise KafkaStreamsError("Input(s) {} to processor {} do not yet exist" \
+                .format((set(inputs) - set(n.name for i in node_inputs)), name))
+
+        for i in inputs:
+            self.nodes[i].children.append(processor)
+
 
 class TopologyBuilder:
     """
     Convenience class for building a graph topology
     """
     def __init__(self):
-        self.topics = []
         self._sources = []
         self._processors = []
         self._sinks = []
         self._state_stores = []
+        self.topics = []
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-
-    def _add_node(self, nodes, name, processor, inputs=[]):
-        if name in nodes:
-            raise KafkaStreamsError(f"A processor with the name '{name}' already added to this topology")
-        nodes[name] = processor
-
-        node_inputs = list(nodes[i] for i in inputs)
-
-        if any(n.name == name for n in node_inputs):
-            raise KafkaStreamsError("A processor cannot have itself as an input")
-        if any(n.name not in nodes for n in node_inputs):
-            raise KafkaStreamsError("Input(s) {} to processor {} do not yet exist" \
-                .format((set(inputs) - set(n.name for i in node_inputs)), name))
-
-        for i in inputs:
-            nodes[i].children.append(processor)
 
     @property
     def sources(self):
@@ -132,13 +149,14 @@ class TopologyBuilder:
             * If node with same name exists already
         """
 
-        def build_source(nodes):
+        def build_source(topology):
+            log.debug(f'TopologyBuilder is building source {name}')
             source = ProcessorNode(name, SourceProcessor(topics))
-            self._add_node(nodes, name, source, [])
+            topology._add_node(name, source, [])
             return source
 
-        self._sources.append(build_source)
         self.topics.extend(topics)
+        self._sources.append(build_source)
         return self
 
     def processor(self, name, processor_type, *parents):
@@ -165,32 +183,23 @@ class TopologyBuilder:
         if not parents:
             raise KafkaStreamsError("Processor '%s' must have a minimum of 1 input", name)
 
-        def build_processor(nodes):
+        def build_processor(topology):
+            log.debug(f'TopologyBuilder is building processor {name}')
             processor_node = ProcessorNode(name, processor_type())
-            self._add_node(nodes, name, processor_node, parents)
+            topology._add_node(name, processor_node, parents)
             return processor_node
 
         self._processors.append(build_processor)
         return self
 
     def sink(self, name, topic, *parents):
-        def build_sink(nodes):
+        def build_sink(topology):
+            log.debug(f'TopologyBuilder is building sink {name}')
             sink = ProcessorNode(name, SinkProcessor(topic))
-            self._add_node(nodes, name, sink, parents)
+            topology._add_node(name, sink, parents)
             return sink
         self._sinks.append(build_sink)
         return self
 
     def build(self):
-        nodes = {}
-        sources = [source_builder(nodes) for source_builder in self._sources]
-        processors = [processor_builder(nodes) for processor_builder in self._processors]
-        sinks = [sink_builder(nodes) for sink_builder in self._sinks]
-
-        state_stores = {}
-        for state_builder in self._state_stores:
-            (state_stores[state_builder.name()], processors) = state_builder()
-            for p in processors:
-                nodes[p].state_stores.add(state_builder.name())
-
-        return Topology(nodes, sources, processors, sinks, state_stores)
+        return Topology(self._sources, self._processors, self._sinks, self._state_stores)

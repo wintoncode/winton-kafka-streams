@@ -83,9 +83,8 @@ class StreamTask:
         self.context.currentRecord = record
         self.current_timestamp = self.timestamp_extractor.extract(record, self.current_timestamp)
 
-        # TODO: FIXME-  assumes only one topic (next two lines)
-        self.context.currentNode = self.topology.sources[0]
-        self.topology.sources[0].process(record.key(), record.value())
+        self.context.currentNode = self.topology.sources[record.topic()]
+        self.topology.sources[record.topic()].process(record.key(), record.value())
 
         self.consumedOffsets[(record.topic(), record.partition())] = record.offset()
         self.commitOffsetNeeded = True

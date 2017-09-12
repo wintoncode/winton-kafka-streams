@@ -25,9 +25,9 @@ class SourceProcessor(BaseProcessor):
 
     """
 
-    def __init__(self, *args):
+    def __init__(self, topics):
         super().__init__()
-        self.topic = args
+        self.topics = topics
 
     def process(self, key, value):
         self.context.forward(key, value)

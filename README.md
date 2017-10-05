@@ -21,21 +21,28 @@ opens the streaming model to many more people and applications.
 
 ## Getting started
 
-### Installing
+### Dependencies
+
 The minimum Python version is currently 3.6 and a working Kafka
 cluster (a single replica is sufficient for testing) are required.
 
-Confluent Python Kafka is also required and it should install
-as a dependency by pip. If it fails during installation,
-then we recommend installing librdkafka with HomeBrew and setting
-`CFLAGS=-I/usr/local/include` and `LDFLAGS=-L/usr/local/lib` is
-recommended.
+You will require [librdkafka](https://github.com/edenhill/librdkafka). On Mac OS, we recommend installing this via HomeBrew and setting `CFLAGS=-I/usr/local/include` and `LDFLAGS=-L/usr/local/lib` is
+when installing Confluent Python Kafka (see below).
+The librdkafka GitHub page lists packages available for Debian and Ubuntu, as well as RPMS.
+For Arch Linux it is available via [AUR](https://aur.archlinux.org/packages/librdkafka-git/).
+
+Confluent Python Kafka is also required and it should be installed
+as a dependency by pip.
+
+### Installing
 
 Cloning the Winton Kafka Streams repository from GitHub is
-recommended if you want to contribute to the project. Use:
+recommended if you want to contribute to the project.
+Then use
 `pip install --editable <path/to/winton_kafka_streams>[develop]`
 to install as an editable workspace with additional dependencies
 required for development.
+You may need to do this using `sudo` on Linux.
 
 If you want to install the code and get a feel for it as a user then
 we recommend using pip install which will pull the package from PyPI

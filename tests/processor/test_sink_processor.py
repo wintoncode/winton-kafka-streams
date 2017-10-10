@@ -12,9 +12,11 @@ _expected_timestamp = 1234567890
 def test_createSinkProcessorObject():
     wks_processor.SinkProcessor('topic1')
 
+
 def test_sinkProcessorTopic():
     sink = wks_processor.SinkProcessor('topic1')
     assert sink.topic == 'topic1'
+
 
 def test_sinkProcessorProcess():
 

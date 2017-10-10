@@ -1,5 +1,5 @@
-
 import winton_kafka_streams.processor._punctuation_queue as punctuation_queue
+
 
 def test_punctuation_queue():
     punctuations = []

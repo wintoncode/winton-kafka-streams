@@ -8,6 +8,7 @@ from . import _context
 
 log = logging.getLogger(__name__)
 
+
 class ProcessorContext(_context.Context):
     """
     The same processor context is shared betwen all nodes in

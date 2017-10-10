@@ -3,6 +3,7 @@ Identity serialiser (default)
 
 """
 
+
 class IdentitySerde:
     """
     Identity serialiser that makes no changes to values

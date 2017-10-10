@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "shell", run: "always", inline: <<-SHELL
-    /home/vagrant/miniconda3/envs/vagrant/bin/pip install /vagrant/
+    /home/vagrant/miniconda3/envs/vagrant/bin/pip install /vagrant/.[develop]
     chown -R vagrant:vagrant /home/vagrant/miniconda3
     rm -fr /tmp/kafka*
     nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /tmp/kafka.log 2>&1 &

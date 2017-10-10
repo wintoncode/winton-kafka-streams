@@ -98,6 +98,10 @@ ENV/
 # mypy
 .mypy_cache/
 
+# vim
+*.*~
+*.swp
+
 # PyCharm
 .idea/
 

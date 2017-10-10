@@ -11,9 +11,9 @@ import winton_kafka_streams._error as wks_error
 import winton_kafka_streams.processor as wks_processor
 import winton_kafka_streams.state as wks_state
 
+
 def test_createTopologyBuilder():
     wks_processor.topology.TopologyBuilder()
-
 
 
 class MyTestProcessor(wks_processor.processor.BaseProcessor):

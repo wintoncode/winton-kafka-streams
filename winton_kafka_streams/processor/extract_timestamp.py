@@ -4,9 +4,9 @@ Time extractor from the message being processed
 """
 
 import abc
-import time
 
 from ._timestamp import TimeStampExtractor
+
 
 class RecordTimeStampExtractor(TimeStampExtractor):
     """

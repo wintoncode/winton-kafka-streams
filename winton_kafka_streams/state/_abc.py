@@ -6,6 +6,7 @@ Abstract classes for implementations of state classes
 import abc
 import collections.abc
 
+
 class StoreBase(collections.abc.Iterator):
     """
     Interface that must be implemented by all state classes

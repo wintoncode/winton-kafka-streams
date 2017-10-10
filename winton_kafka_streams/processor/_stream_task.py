@@ -9,7 +9,6 @@ from ._punctuation_queue import PunctuationQueue
 from .wallclock_timestamp import WallClockTimeStampExtractor
 
 
-
 class DummyRecord:
     """
     Dummy implementation of Record that provides the minimum needed

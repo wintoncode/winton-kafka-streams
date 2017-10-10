@@ -4,8 +4,10 @@ Test of source processor behaviour
 
 import winton_kafka_streams.processor as wks_processor
 
+
 def test_createSourceProcessorObject():
     wks_processor.SourceProcessor(['test-topic-name'])
+
 
 def test_sourceProcessorTopic():
     sp1 = wks_processor.SourceProcessor(('topic1',))

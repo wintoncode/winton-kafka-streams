@@ -7,6 +7,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 class BaseProcessor:
     def __init__(self):
         super().__init__()
@@ -17,6 +18,7 @@ class BaseProcessor:
     def initialise(self, _name, _context):
         self.name = _name
         self.context = _context
+
 
 class SourceProcessor(BaseProcessor):
     """
@@ -34,6 +36,7 @@ class SourceProcessor(BaseProcessor):
 
     def punctuate(self, timestamp):
         pass
+
 
 class SinkProcessor(BaseProcessor):
     """

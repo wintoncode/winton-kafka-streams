@@ -1,9 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 Vagrant.configure("2") do |config|
-  
+
   config.vm.box = "bento/ubuntu-16.04"
-  
+
   config.vm.network "forwarded_port", guest: 2181, host: 2181
   config.vm.network "forwarded_port", guest: 9092, host: 9092
 
@@ -13,6 +13,10 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision "shell", inline: <<-SHELL
+    export SCALA_VER=2.11
+    export KAFKA_VER=0.11.0.1
+    export KAFKA_PACKAGE=kafka_${SCALA_VER}-${KAFKA_VER}
+
     apt-get update
     apt-get install -y tmux htop vim wget git
 
@@ -30,12 +34,11 @@ Vagrant.configure("2") do |config|
     echo source activate vagrant >> /home/vagrant/.profile
     echo cd /vagrant/ >> /home/vagrant/.profile
 
-
     apt-get install -y zookeeperd openjdk-8-jdk
-    wget -q http://mirror.ox.ac.uk/sites/rsync.apache.org/kafka/0.11.0.1/kafka_2.11-0.11.0.1.tgz
-    tar -xzf kafka_2.11-0.11.0.1.tgz
-    rm -f kafka_2.11-0.11.0.1.tgz
-    mv kafka_2.11-0.11.0.1 /opt/kafka
+    wget -q http://mirror.ox.ac.uk/sites/rsync.apache.org/kafka/${KAFKA_VER}/${KAFKA_PACKAGE}.tgz
+    tar -xzf ${KAFKA_PACKAGE}.tgz
+    rm -f ${KAFKA_PACKAGE}.tgz
+    mv ${KAFKA_PACKAGE} /opt/kafka
   SHELL
 
   config.vm.provision "shell", run: "always", inline: <<-SHELL

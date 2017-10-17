@@ -10,6 +10,7 @@ from .._error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 
+
 def _raiseIfNullRecord(fn):
     @functools.wraps(fn)
     def _inner(*args, **kwargs):
@@ -17,6 +18,8 @@ def _raiseIfNullRecord(fn):
             raise KafkaStreamsError(f"Record cannot be unset when retrieving {fn.__name__}")
         return fn(*args, **kwargs)
     return _inner
+
+
 class Context:
     """
     Processor context object
@@ -71,9 +74,9 @@ class Context:
         # TODO: Need to check for a global state here
         #       This is the reason that processors access store through context
 
-        if not name in self.currentNode.state_stores:
+        if name not in self.currentNode.state_stores:
             raise KafkaStreamsError(f"Processor {currentNode.name} does not have access to store {name}")
-        if not name in self._state_stores:
+        if name not in self._state_stores:
             raise KafkaStreamsError(f"Store {name} is not found")
 
         return self._state_stores[name]

@@ -6,8 +6,10 @@ custom processor implementations
 import winton_kafka_streams.processor as wks_processor
 from winton_kafka_streams.processor.processor_context import ProcessorContext
 
+
 def test_createBaseProcessor():
     wks_processor.BaseProcessor()
+
 
 def test_initialiseBaseProcessor():
     mock_context = ProcessorContext(None, None, {})

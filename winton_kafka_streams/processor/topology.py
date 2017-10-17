@@ -10,6 +10,7 @@ from .._error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 
+
 class ProcessorNode:
     def __init__(self, name, processor):
         self.name = name
@@ -32,7 +33,7 @@ class ProcessorNode:
 
 class Topology:
     """
-    A realised instance of a toplogy
+    A realised instance of a topology
 
     """
     def __init__(self, sources, processors, sinks, state_stores):
@@ -123,6 +124,7 @@ class TopologyBuilder:
 
         def build_store():
             return store_type(store_name), processors
+
         def _name():
             return store_name
         build_store.name = _name

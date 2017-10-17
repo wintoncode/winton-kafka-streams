@@ -5,6 +5,7 @@ Test of all serde classes
 
 import winton_kafka_streams.processor.serde.identity as identity
 
+
 def test_identitySerde():
     ident_serde = identity.IdentitySerde()
     assert ident_serde.serialise(123) == 123

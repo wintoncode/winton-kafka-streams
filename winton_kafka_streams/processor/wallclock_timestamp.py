@@ -7,6 +7,7 @@ import time
 
 from ._timestamp import TimeStampExtractor
 
+
 class WallClockTimeStampExtractor(TimeStampExtractor):
     """
     Time stamp extractor that returns wall clock time at the point

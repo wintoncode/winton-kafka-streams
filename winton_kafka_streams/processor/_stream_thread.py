@@ -75,7 +75,6 @@ class StreamThread:
         def __str__(self):
             return self.name
 
-
     def __init__(self, _topology, _config, _kafka_supplier):
         super().__init__()
         self.topology = _topology
@@ -160,7 +159,6 @@ class StreamThread:
 
         return records
 
-
     def add_records_to_tasks(self, records):
         for record in records:
             self.tasks[record.partition()].add_records([record])
@@ -186,7 +184,7 @@ class StreamThread:
             self.log.debug('Commit task "%s"', task)
             task.commit()
         except CommitFailedException as cfe:
-            self.log.warn('Failed to commit')
+            self.log.warning('Failed to commit')
             self.log.exception(cfe)
             pass
         except KafkaException as ke:

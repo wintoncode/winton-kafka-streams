@@ -9,6 +9,7 @@ import queue
 
 from ._abc import StoreBase
 
+
 class SimpleStore(StoreBase):
     """
     State class that holds all transform calculations in a simple array
@@ -38,8 +39,10 @@ class SimpleStore(StoreBase):
         class _IterSimpleStore:
             def __init__(self, _simple_store):
                 self.store = _simple_store
+
             def __iter__(self):
                 return self
+
             def __next__(self):
                 if self.store.values.empty():
                     raise StopIteration

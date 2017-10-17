@@ -5,6 +5,7 @@ Base class for serde implementations
 
 import abc
 
+
 class BaseSerde(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def serialise(self, value):

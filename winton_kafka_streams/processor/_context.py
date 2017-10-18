@@ -75,7 +75,7 @@ class Context:
         #       This is the reason that processors access store through context
 
         if name not in self.currentNode.state_stores:
-            raise KafkaStreamsError(f"Processor {currentNode.name} does not have access to store {name}")
+            raise KafkaStreamsError(f"Processor {self.currentNode.name} does not have access to store {name}")
         if name not in self._state_stores:
             raise KafkaStreamsError(f"Store {name} is not found")
 

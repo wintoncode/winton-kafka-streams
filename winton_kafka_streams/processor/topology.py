@@ -50,10 +50,10 @@ class Topology:
         self.sinks = [sink_builder(self) for sink_builder in sinks]
 
         self.state_stores = {}
-        for state_builder in self.state_stores:
+        for state_builder in state_stores:
             (self.state_stores[state_builder.name()], processors) = state_builder()
             for p in processors:
-                nodes[p].state_stores.add(state_builder.name())
+                self.nodes[p].state_stores.add(state_builder.name())
 
     def _add_node(self, name, processor, inputs=[]):
         if name in self.nodes:
@@ -130,6 +130,7 @@ class TopologyBuilder:
         build_store.name = _name
 
         self._state_stores.append(build_store)
+        return self
 
     def source(self, name, topics):
         """

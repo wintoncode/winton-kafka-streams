@@ -74,7 +74,7 @@ Importance: Medium
 CACHE_MAX_BYTES_BUFFERING = 10485760
 
 """
-Default serializer/deserializer class for record keys, implements the Serde interface (see also value.serde)
+Default serializer/deserializer class for record keys, implements the Serde interface (see also value.serdes)
 Default: Serdes.ByteArray().getClass().getName()
 Importance: Medium
 """
@@ -102,7 +102,7 @@ Importance: Medium
 TIMESTAMP_EXTRACTOR = None # TODO
 
 """
-Default serializer/deserializer class for record values, implements the Serde interface (see also key.serde)
+Default serializer/deserializer class for record values, implements the Serde interface (see also key.serdes)
 Default: Serdes.ByteArray().getClass().getName()
 Importance: Medium
 """

@@ -3,7 +3,7 @@ Test of all serde classes
 
 """
 
-import winton_kafka_streams.processor.serde.identity as identity
+import winton_kafka_streams.processor.serialization.serdes.identity as identity
 
 
 def test_identitySerde():

@@ -5,7 +5,7 @@ Record collector sends produced results to kafka topic
 
 import logging
 
-from winton_kafka_streams.processor.serialization.serdes.identity import IdentitySerde
+from winton_kafka_streams.processor.serialization.serdes import IdentitySerde
 from ..kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)

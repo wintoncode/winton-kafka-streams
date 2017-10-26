@@ -3,14 +3,14 @@ Test of all serde classes
 
 """
 
-import winton_kafka_streams.processor.serialization.serdes.identity as identity
+from winton_kafka_streams.processor.serialization.serdes import IdentitySerde
 
 
-def test_identitySerde():
-    ident_serde = identity.IdentitySerde()
-    assert ident_serde.serialise(123) == 123
-    assert ident_serde.serialise('hello') == 'hello'
+def test_identity_serde():
+    identity_serde = IdentitySerde()
+    assert identity_serde.serializer.serialise(123) == 123
+    assert identity_serde.serializer.serialise('hello') == 'hello'
 
-    assert ident_serde.deserialise(123) == 123
-    assert ident_serde.deserialise('hello') == 'hello'
+    assert identity_serde.deserializer.deserialise(123) == 123
+    assert identity_serde.deserializer.deserialise('hello') == 'hello'
 

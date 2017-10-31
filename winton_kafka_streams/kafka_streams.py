@@ -9,6 +9,7 @@ from enum import Enum
 
 from .processor import StreamThread
 from .kafka_client_supplier import KafkaClientSupplier
+from .kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

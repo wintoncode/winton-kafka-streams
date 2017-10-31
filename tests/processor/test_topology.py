@@ -4,10 +4,8 @@ Test of topology creation
 Low level connection of processor units
 """
 
-import pytest
-import unittest
 
-import winton_kafka_streams._error as wks_error
+import unittest
 import winton_kafka_streams.processor as wks_processor
 import winton_kafka_streams.state as wks_state
 

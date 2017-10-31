@@ -120,7 +120,7 @@ class KafkaStreams:
             for stream_thread in self.stream_threads:
                 stream_thread.start()
         else:
-            raise KafkaStreamsError('KafkaStreams already started')
+            raise KafkaStreamsError('KafkaStreams already started.')
 
     def close(self):
         if self.state.is_created_or_running():

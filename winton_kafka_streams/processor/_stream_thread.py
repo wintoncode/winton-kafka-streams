@@ -9,6 +9,7 @@ from enum import Enum
 
 from confluent_kafka import KafkaError
 
+from .task_id import TaskId
 from ._stream_task import StreamTask
 
 
@@ -200,7 +201,7 @@ class StreamThread:
 
     def add_stream_tasks(self, assignment):
         # simplistic, but good enough for now. should take co-locating topics etc. into account in the future
-        grouped_tasks = {f'{topic_partition.topic}_{topic_partition.partition}': {topic_partition}
+        grouped_tasks = {TaskId(topic_partition.topic, topic_partition.partition): {topic_partition}
                          for topic_partition in assignment}
         self.tasks = [StreamTask(task_id, self.config.APPLICATION_ID,
                                  partitions, self.topology, self.consumer,

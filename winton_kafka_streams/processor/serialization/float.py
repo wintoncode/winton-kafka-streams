@@ -1,10 +1,11 @@
 from ._deserializer import Deserializer
 from ._serializer import Serializer
+import struct
 
 
-class IdentitySerializer(Serializer):
+class FloatSerializer(Serializer):
     def serialize(self, topic, data):
-        return data
+        return struct.pack('f', data)
 
     def configure(self, configs, is_key):
         pass
@@ -13,12 +14,12 @@ class IdentitySerializer(Serializer):
         pass
 
 
-class IdentityDeserializer(Deserializer):
-    def close(self):
-        pass
-
+class FloatDeserializer(Deserializer):
     def deserialize(self, topic, data):
-        return data
+        return struct.unpack('f', data)
 
     def configure(self, configs, is_key):
+        pass
+
+    def close(self):
         pass

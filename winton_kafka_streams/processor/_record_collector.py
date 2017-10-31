@@ -5,8 +5,8 @@ Record collector sends produced results to kafka topic
 
 import logging
 
-from winton_kafka_streams.processor.serialization.serdes import IdentitySerde
 from ..kafka_streams_error import KafkaStreamsError
+from winton_kafka_streams.processor.serialization.serdes import BytesSerde
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class RecordCollector:
         self.producer = _producer
 
     def send(self, topic, key, value, timestamp,
-             keySerialiser = IdentitySerde(), valueSerialiser = IdentitySerde(),
+             keySerialiser = BytesSerde(), valueSerialiser = BytesSerde(),
              *, partition = RD_KAFKA_PARTITION_UA, partitioner = None):
         key = keySerialiser.serialise(key)
         value = valueSerialiser.serialise(value)

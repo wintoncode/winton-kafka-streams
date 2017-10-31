@@ -1,7 +1,7 @@
 from confluent_kafka import Producer
 
 
-p = Producer({'bootstrap.servers': 'kafka:9092'})
+p = Producer({'bootstrap.servers': 'localhost:9092'})
 topic = 'wks-wordcount-example-topic'
 some_data_source = ["a b c", "a b", "a"]
 for data in some_data_source:

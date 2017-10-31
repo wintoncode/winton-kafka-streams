@@ -8,6 +8,7 @@ import threading
 from enum import Enum
 
 from confluent_kafka import KafkaError
+from confluent_kafka.cimpl import KafkaException
 
 from .task_id import TaskId
 from ._stream_task import StreamTask
@@ -150,7 +151,7 @@ class StreamThread:
         record = self.consumer.poll(poll_timeout)
         while record is not None:
             if not record.error():
-                self.log.debug('Received message: %s', record.value().decode('utf-8'))
+                self.log.debug('Received message at offset: %d', record.offset())
                 records.append(record)
                 record = self.consumer.poll(0.)
             elif record.error().code() == KafkaError._PARTITION_EOF:
@@ -205,7 +206,7 @@ class StreamThread:
                          for topic_partition in assignment}
         self.tasks = [StreamTask(task_id, self.config.APPLICATION_ID,
                                  partitions, self.topology, self.consumer,
-                                 self.kafka_supplier.producer())
+                                 self.kafka_supplier.producer(), self.config)
                       for (task_id, partitions)
                       in grouped_tasks.items()]
 

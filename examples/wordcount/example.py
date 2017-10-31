@@ -13,6 +13,7 @@ import collections
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
+from winton_kafka_streams.processor.serialization.serdes import StringSerde
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class WordCount(BaseProcessor):
         self.context.schedule(10.)
 
     def process(self, key, value):
-        words = value.decode('utf-8').split()
+        words = value.split()
         log.debug(f'words list ({words})')
         self.word_counts.update(words)
         self.dirty_words |= set(words)
@@ -44,9 +45,9 @@ class WordCount(BaseProcessor):
 
 def run(config_file):
     kafka_config.read_local_config(config_file)
+    kafka_config.KEY_SERDE = StringSerde
+    kafka_config.VALUE_SERDE = StringSerde
 
-    # Can also directly set config variables inline in Python
-    #kafka_config.KEY_SERDE = MySerde
     with TopologyBuilder() as topology_builder:
         topology_builder. \
             source('input-value', ['wks-wordcount-example-topic']). \

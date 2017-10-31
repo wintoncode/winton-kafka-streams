@@ -7,12 +7,10 @@ import abc
 
 
 def extract_config_property(configs, is_key, property_name):
-    prop_value = ''
-    overridden_property_name = ('key.%s' % property_name) if is_key else ('value.%s' % property_name)
-    if overridden_property_name in configs:
-        prop_value = configs[overridden_property_name]
-    elif property_name in configs:
-        prop_value = configs[property_name]
+    overridden_property_name = ('KEY_%s' % property_name) if is_key else ('VALUE_%s' % property_name)
+    prop_value = getattr(configs, overridden_property_name, None)
+    if prop_value is None:
+        prop_value = getattr(configs, property_name, None)
     return prop_value
 
 

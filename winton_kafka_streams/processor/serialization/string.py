@@ -1,4 +1,4 @@
-from ._serde import extract_config_property
+from winton_kafka_streams.processor.serialization._serde import extract_config_property
 from ._deserializer import Deserializer
 from ._serializer import Serializer
 
@@ -12,12 +12,12 @@ class StringSerializer(Serializer):
         return data.encode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
-        encoding_value = extract_config_property(configs, is_key, 'serializer.encoding')
-        if encoding_value:
+        encoding_value = extract_config_property(configs, is_key, 'SERIALIZER_ENCODING')
+        if encoding_value is not None:
             self.encoding = encoding_value
 
-        error_value = extract_config_property(configs, is_key, 'serializer.error')
-        if error_value:
+        error_value = extract_config_property(configs, is_key, 'SERIALIZER_ERROR')
+        if error_value is not None:
             self.on_error = error_value
 
     def close(self):
@@ -33,12 +33,12 @@ class StringDeserializer(Deserializer):
         return data.decode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
-        encoding_value = extract_config_property(configs, is_key, 'deserializer.encoding')
-        if encoding_value:
+        encoding_value = extract_config_property(configs, is_key, 'DESERIALIZER_ENCODING')
+        if encoding_value is not None:
             self.encoding = encoding_value
 
-        error_value = extract_config_property(configs, is_key, 'deserializer.error')
-        if error_value:
+        error_value = extract_config_property(configs, is_key, 'DESERIALIZER_ERROR')
+        if error_value is not None:
             self.on_error = error_value
 
     def close(self):

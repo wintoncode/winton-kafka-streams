@@ -10,7 +10,7 @@ class JsonSerializer(Serializer):
 
     def serialize(self, topic, data):
         string_form = json.dumps(data)
-        return self.serialize(topic, string_form)
+        return self.string_serializer.serialize(topic, string_form)
 
     def configure(self, configs, is_key):
         self.string_serializer.configure(configs, is_key)

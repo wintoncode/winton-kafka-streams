@@ -5,7 +5,7 @@ import struct
 
 class FloatSerializer(Serializer):
     def serialize(self, topic, data):
-        return struct.pack('f', data)
+        return struct.pack('d', data)
 
     def configure(self, configs, is_key):
         pass
@@ -16,7 +16,7 @@ class FloatSerializer(Serializer):
 
 class FloatDeserializer(Deserializer):
     def deserialize(self, topic, data):
-        return struct.unpack('f', data)
+        return struct.unpack('d', data)[0]
 
     def configure(self, configs, is_key):
         pass

@@ -10,7 +10,7 @@ def extract_config_property(configs, is_key, property_name):
     overridden_property_name = ('KEY_%s' % property_name) if is_key else ('VALUE_%s' % property_name)
     prop_value = getattr(configs, overridden_property_name, None)
     if prop_value is None:
-        prop_value = getattr(configs, property_name, None)
+        prop_value = getattr(configs, property_name)
     return prop_value
 
 

@@ -13,17 +13,9 @@ class IntegerSerializer(Serializer):
         return int(data).to_bytes(length=self.int_size, byteorder=self.byte_order, signed=self.signed)
 
     def configure(self, configs, is_key):
-        byte_order = extract_config_property(configs, is_key, 'SERIALIZER_BYTEORDER')
-        if byte_order is not None:
-            self.byte_order = byte_order
-
-        signed = extract_config_property(configs, is_key, 'SERIALIZER_SIGNED')
-        if signed is not None:
-            self.signed = signed
-
-        int_size = extract_config_property(configs, is_key, 'SERIALIZER_INT_SIZE')
-        if int_size is not None:
-            self.int_size = int_size
+        self.byte_order = extract_config_property(configs, is_key, 'SERIALIZER_BYTEORDER')
+        self.signed = extract_config_property(configs, is_key, 'SERIALIZER_SIGNED')
+        self.int_size = extract_config_property(configs, is_key, 'SERIALIZER_INT_SIZE')
 
     def close(self):
         pass
@@ -38,13 +30,8 @@ class IntegerDeserializer(Deserializer):
         return int.from_bytes(bytes=data, byteorder=self.byte_order, signed=self.signed)
 
     def configure(self, configs, is_key):
-        byte_order = extract_config_property(configs, is_key, 'DESERIALIZER_BYTEORDER')
-        if byte_order is not None:
-            self.byte_order = byte_order
-
-        signed = extract_config_property(configs, is_key, 'DESERIALIZER_SIGNED')
-        if signed is not None:
-            self.signed = signed
+        self.byte_order = extract_config_property(configs, is_key, 'DESERIALIZER_BYTEORDER')
+        self.signed = extract_config_property(configs, is_key, 'DESERIALIZER_SIGNED')
 
     def close(self):
         pass

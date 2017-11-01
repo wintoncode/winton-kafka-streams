@@ -12,13 +12,8 @@ class StringSerializer(Serializer):
         return data.encode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
-        encoding_value = extract_config_property(configs, is_key, 'SERIALIZER_ENCODING')
-        if encoding_value is not None:
-            self.encoding = encoding_value
-
-        error_value = extract_config_property(configs, is_key, 'SERIALIZER_ERROR')
-        if error_value is not None:
-            self.on_error = error_value
+        self.encoding = extract_config_property(configs, is_key, 'SERIALIZER_ENCODING')
+        self.on_error = extract_config_property(configs, is_key, 'SERIALIZER_ERROR')
 
     def close(self):
         pass
@@ -33,13 +28,8 @@ class StringDeserializer(Deserializer):
         return data.decode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
-        encoding_value = extract_config_property(configs, is_key, 'DESERIALIZER_ENCODING')
-        if encoding_value is not None:
-            self.encoding = encoding_value
-
-        error_value = extract_config_property(configs, is_key, 'DESERIALIZER_ERROR')
-        if error_value is not None:
-            self.on_error = error_value
+        self.encoding = extract_config_property(configs, is_key, 'DESERIALIZER_ENCODING')
+        self.on_error = extract_config_property(configs, is_key, 'DESERIALIZER_ERROR')
 
     def close(self):
         pass

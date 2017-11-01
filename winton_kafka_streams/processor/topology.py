@@ -6,7 +6,7 @@ Classes for building a graph topology comprising processor derived nodes
 import logging
 
 from .processor import SourceProcessor, SinkProcessor
-from .._error import KafkaStreamsError
+from ..kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

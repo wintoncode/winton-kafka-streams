@@ -9,6 +9,7 @@ from enum import Enum
 
 from .processor import StreamThread
 from .kafka_client_supplier import KafkaClientSupplier
+from .kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ class KafkaStreams:
             for stream_thread in self.stream_threads:
                 stream_thread.start()
         else:
-            raise KafkaStreamsError('KafkaStreams already started')
+            raise KafkaStreamsError('KafkaStreams already started.')
 
     def close(self):
         if self.state.is_created_or_running():

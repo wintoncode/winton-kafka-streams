@@ -23,7 +23,7 @@ import logging
 
 import javaproperties
 
-from ._error import KafkaStreamsError
+from .kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

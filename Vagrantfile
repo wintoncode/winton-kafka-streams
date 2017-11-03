@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
     echo source activate vagrant >> /home/vagrant/.profile
     echo cd /vagrant/ >> /home/vagrant/.profile
 
-    apt-get install -y zookeeperd openjdk-8-jdk
+    apt-get install -y zookeeperd openjdk-8-jdk kafkacat
     wget -q http://mirror.ox.ac.uk/sites/rsync.apache.org/kafka/${KAFKA_VER}/${KAFKA_PACKAGE}.tgz
     tar -xzf ${KAFKA_PACKAGE}.tgz
     rm -f ${KAFKA_PACKAGE}.tgz
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "shell", run: "always", inline: <<-SHELL
-    /home/vagrant/miniconda3/envs/vagrant/bin/pip install /vagrant/.[develop]
+    /home/vagrant/miniconda3/envs/vagrant/bin/pip install -e /vagrant/.[develop]
     chown -R vagrant:vagrant /home/vagrant/miniconda3
     rm -fr /tmp/kafka*
     nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /tmp/kafka.log 2>&1 &

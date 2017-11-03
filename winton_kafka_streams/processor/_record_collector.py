@@ -54,7 +54,7 @@ class RecordCollector:
 
         TODO: Decide if an error should be raised or if this should be demoted?
               Can an error be raised if a broker fails? Should we simply warn
-              and continue to poll and retrty in this case?
+              and continue to poll and retry in this case?
         """
 
         # TODO: Is err correct? Should we check if msg has error?

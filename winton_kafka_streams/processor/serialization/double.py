@@ -4,9 +4,9 @@ from ._serializer import Serializer
 import struct
 
 
-class FloatSerializer(Serializer):
+class DoubleSerializer(Serializer):
     def serialize(self, topic, data):
-        return struct.pack('f', data)
+        return struct.pack('d', data)
 
     def configure(self, configs, is_key):
         pass
@@ -15,9 +15,9 @@ class FloatSerializer(Serializer):
         pass
 
 
-class FloatDeserializer(Deserializer):
+class DoubleDeserializer(Deserializer):
     def deserialize(self, topic, data):
-        return struct.unpack('f', data)[0]
+        return struct.unpack('d', data)[0]
 
     def configure(self, configs, is_key):
         pass

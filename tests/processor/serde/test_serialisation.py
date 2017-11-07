@@ -21,8 +21,14 @@ def test_integer_serde():
 
 def test_float_serde():
     float_serde = FloatSerde()
-    assert float_serde.serializer.serialize('topic', 123.25) == b'\x00\x00\x00\x00\x00\xd0^@'
-    assert float_serde.deserializer.deserialize('topic', b'\x00\x00\x00\x00\x00\xd0^@') == 123.25
+    assert float_serde.serializer.serialize('topic', -18.125) == b'\x00\x00\x91\xc1'
+    assert float_serde.deserializer.deserialize('topic', b'\x00\x00\x91\xc1') == -18.125
+
+
+def test_double_serde():
+    double_serde = DoubleSerde()
+    assert double_serde.serializer.serialize('topic', 123.25) == b'\x00\x00\x00\x00\x00\xd0^@'
+    assert double_serde.deserializer.deserialize('topic', b'\x00\x00\x00\x00\x00\xd0^@') == 123.25
 
 
 def test_json_serde():

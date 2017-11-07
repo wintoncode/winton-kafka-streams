@@ -6,7 +6,6 @@ Run ./generator --help to see the full range of options.
 
 """
 
-
 import logging
 from collections import namedtuple
 import datetime as dt
@@ -24,6 +23,7 @@ _VERBOSITY = {
     1: logging.INFO,
     2: logging.DEBUG
 }
+
 
 def _get_items(items):
     parsed_items = []
@@ -57,7 +57,7 @@ def _get_sources(items, limit):
     }
 
 
-def _run(sources, timestamp, freq, real_time, rt_mutiplier, produce):
+def _run(sources, timestamp, freq, real_time, rt_multiplier, produce):
     """
     Start the generation of prices on the 'prices' topic
     """
@@ -77,7 +77,7 @@ def _run(sources, timestamp, freq, real_time, rt_mutiplier, produce):
         timestamp = timestamp + freq
         if real_time:
             duration = dt.datetime.utcnow() - start_time
-            sleep_seconds = (freq.total_seconds() - duration.total_seconds()) / rt_mutiplier
+            sleep_seconds = (freq.total_seconds() - duration.total_seconds()) / rt_multiplier
             if sleep_seconds < 0.0:
                 LOGGER.warning(
                     'Not keeping up, lagging by %ss', -sleep_seconds
@@ -129,7 +129,7 @@ def _get_parser():
              'to match the frequency specified in --freq.'
     )
     parser.add_argument(
-        '-rtm', '--real-time-multiplier', type=float,
+        '-rtm', '--real-time-multiplier', type=float, default=1.0,
         help='Speed up real time producer of prices by a factor. '
              'Default=1.0 (actual time).'
     )
@@ -152,13 +152,15 @@ def main():
     if args.broker_list is None:
         def _produce(timestamp, name, price):
             print('{},{},{}'.format(timestamp, name, price))
+
         LOGGER.debug('Running in console mode')
-        _run(sources, timestamp, freq, args.real_time, _produce)
+        _run(sources, timestamp, freq, args.real_time, args.real_time_multiplier, _produce)
     else:
         if args.topic is None:
             raise ValueError('Must specify --topic when using Kafka')
         from confluent_kafka import Producer
         producer = Producer({'bootstrap.servers': args.broker_list})
+
         def _produce(timestamp, name, price):
             data = '{},{},{}'.format(timestamp, name, price)
             produced = False
@@ -169,6 +171,7 @@ def main():
                     produced = True
                 except BufferError:
                     producer.poll(10)
+
         LOGGER.debug('Producing to %s on %s', args.topic, args.broker_list)
         _run(sources, timestamp, freq, args.real_time, args.real_time_multiplier, _produce)
         producer.flush()

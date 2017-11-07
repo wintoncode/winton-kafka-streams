@@ -8,6 +8,7 @@ import pandas as pd
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
+from winton_kafka_streams.processor.serialization.serdes import StringSerde, serde_as_string
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,29 +58,29 @@ class Binning(BaseProcessor):
         --------
           None
         """
-        timestamp, symbol, price = value.decode('utf-8').split(',')
+        timestamp, symbol, price = value.split(',')
         timestamp = pd.Timestamp(timestamp)
 
         bin_ts = pd.Timestamp(
             year=timestamp.year, month=timestamp.month, day=timestamp.day,
             hour=timestamp.hour, minute=timestamp.minute, second=0
         ) + pd.Timedelta('1min')
-        bin_ts_and_price = '{},{}'.format(bin_ts.isoformat(), price).encode('utf-8')
+        bin_ts_and_price = '{},{}'.format(bin_ts.isoformat(), price)
 
         last_bin = self.bins.get(symbol)
 
         if last_bin is not None:
-            last_bin_ts, last_price = last_bin.decode('utf-8').split(',')
+            last_bin_ts, last_price = last_bin.split(',')
             if last_bin_ts != bin_ts.isoformat():
-                key = '{},{}'.format(last_bin_ts, symbol).encode('utf-8')
+                key = '{},{}'.format(last_bin_ts, symbol)
                 LOGGER.debug('Forwarding to sink  (%s, %s)', key, last_price)
                 self.context.forward(key, last_price)
-                self.context.commit() # TODO: implement auto-commit, remove this
+                self.context.commit()  # TODO: implement auto-commit, remove this
 
         self.bins[symbol] = bin_ts_and_price
 
 
-def run(config_file = None):
+def run(config_file=None):
     """
     Starts the binning process
 
@@ -90,6 +91,8 @@ def run(config_file = None):
     """
     if config_file:
         kafka_config.read_local_config(config_file)
+    kafka_config.KEY_SERDE = serde_as_string(StringSerde)
+    kafka_config.VALUE_SERDE = serde_as_string(StringSerde)
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \

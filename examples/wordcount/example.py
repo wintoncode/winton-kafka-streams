@@ -29,7 +29,7 @@ class WordCount(BaseProcessor):
         self.context.schedule(10.)
 
     def process(self, key, value):
-        words = value.decode('utf-8').split()
+        words = value.split()
         log.debug(f'words list ({words})')
         self.word_counts.update(words)
         self.dirty_words |= set(words)
@@ -45,8 +45,6 @@ class WordCount(BaseProcessor):
 def run(config_file):
     kafka_config.read_local_config(config_file)
 
-    # Can also directly set config variables inline in Python
-    #kafka_config.KEY_SERDE = MySerde
     with TopologyBuilder() as topology_builder:
         topology_builder. \
             source('input-value', ['wks-wordcount-example-topic']). \

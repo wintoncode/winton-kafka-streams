@@ -14,7 +14,7 @@ class IntegerSerializer(Serializer):
 
     def configure(self, configs, is_key):
         self.byte_order = extract_config_property(configs, is_key, 'SERIALIZER_BYTEORDER')
-        self.signed = extract_config_property(configs, is_key, 'SERIALIZER_SIGNED')
+        self.signed = extract_config_property(configs, is_key, 'SERIALIZER_SIGNED').lower() == 'true'
         self.int_size = extract_config_property(configs, is_key, 'SERIALIZER_INT_SIZE')
 
     def close(self):
@@ -31,7 +31,7 @@ class IntegerDeserializer(Deserializer):
 
     def configure(self, configs, is_key):
         self.byte_order = extract_config_property(configs, is_key, 'DESERIALIZER_BYTEORDER')
-        self.signed = extract_config_property(configs, is_key, 'DESERIALIZER_SIGNED')
+        self.signed = extract_config_property(configs, is_key, 'DESERIALIZER_SIGNED').lower() == 'true'
 
     def close(self):
         pass

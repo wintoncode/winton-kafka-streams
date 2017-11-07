@@ -23,8 +23,8 @@ import logging
 
 import javaproperties
 
+from winton_kafka_streams.processor.serialization.serdes import BytesSerde, serde_as_string
 from .kafka_streams_error import KafkaStreamsError
-from winton_kafka_streams.processor.serialization.serdes import BytesSerde
 
 log = logging.getLogger(__name__)
 
@@ -72,13 +72,6 @@ Importance: Medium
 CACHE_MAX_BYTES_BUFFERING = 10485760
 
 """
-Default serializer/deserializer class for record keys, implements the Serde interface (see also value.serdes)
-Default: winton_kafka_streams.processor.serialization.serdes.BytesSerde
-Importance: Medium
-"""
-KEY_SERDE = BytesSerde
-
-"""
 The number of standby replicas for each task
 Default: 0
 Importance: Medium
@@ -98,13 +91,6 @@ Default: see Timestamp Extractor
 Importance: Medium
 """
 TIMESTAMP_EXTRACTOR = None  #  TODO
-
-"""
-Default serializer/deserializer class for record values, implements the Serde interface (see also key.serdes)
-Default: winton_kafka_streams.processor.serialization.serdes.BytesSerde
-Importance: Medium
-"""
-VALUE_SERDE = BytesSerde
 
 """
 A host:port pair pointing to an embedded user defined endpoint that can be used for discovering the locations of state stores within a single Winton Kafka Streams application. The value of this must be different for each instance of the application.
@@ -236,9 +222,23 @@ MAX_POLL_RECORDS = 1000
 
 #### - Serdes Configuration - ####
 
+"""
+Default serializer/deserializer class for record values, implements the Serde interface (see also key.serdes)
+Default: winton_kafka_streams.processor.serialization.serdes.BytesSerde
+Importance: Medium
+"""
+VALUE_SERDE = serde_as_string(BytesSerde)
+
+"""
+Default serializer/deserializer class for record keys, implements the Serde interface (see also value.serdes)
+Default: winton_kafka_streams.processor.serialization.serdes.BytesSerde
+Importance: Medium
+"""
+KEY_SERDE = serde_as_string(BytesSerde)
+
 # FloatSerde - double precision
-SERIALIZER_DOUBLE_PRECISION = True
-DESERIALIZER_DOUBLE_PRECISION = True
+SERIALIZER_DOUBLE_PRECISION = 'true'
+DESERIALIZER_DOUBLE_PRECISION = 'true'
 KEY_SERIALIZER_DOUBLE_PRECISION = None
 KEY_DESERIALIZER_DOUBLE_PRECISION = None
 VALUE_SERIALIZER_DOUBLE_PRECISION = None
@@ -269,8 +269,8 @@ VALUE_SERIALIZER_BYTEORDER = None
 VALUE_DESERIALIZER_BYTEORDER = None
 
 # IntegerSerde - signed integer
-SERIALIZER_SIGNED = True
-DESERIALIZER_SIGNED = True
+SERIALIZER_SIGNED = 'true'
+DESERIALIZER_SIGNED = 'true'
 KEY_SERIALIZER_SIGNED = None
 KEY_DESERIALIZER_SIGNED = None
 VALUE_SERIALIZER_SIGNED = None

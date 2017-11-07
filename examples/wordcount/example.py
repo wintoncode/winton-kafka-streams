@@ -13,7 +13,6 @@ import collections
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
-from winton_kafka_streams.processor.serialization.serdes import StringSerde
 
 log = logging.getLogger(__name__)
 
@@ -45,8 +44,6 @@ class WordCount(BaseProcessor):
 
 def run(config_file):
     kafka_config.read_local_config(config_file)
-    kafka_config.KEY_SERDE = StringSerde
-    kafka_config.VALUE_SERDE = StringSerde
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \

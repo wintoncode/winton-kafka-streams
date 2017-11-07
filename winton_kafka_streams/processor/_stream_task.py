@@ -3,6 +3,7 @@ import logging
 
 from confluent_kafka import TopicPartition
 
+from winton_kafka_streams.processor.serialization.serdes import serde_from_string
 from ._record_collector import RecordCollector
 from .processor_context import ProcessorContext
 from ._punctuation_queue import PunctuationQueue
@@ -47,9 +48,9 @@ class StreamTask:
         self.producer = _producer
         self.config = _config
 
-        self.key_serde = self.config.KEY_SERDE()
+        self.key_serde = serde_from_string(self.config.KEY_SERDE)
         self.key_serde.configure(self.config, True)
-        self.value_serde = self.config.VALUE_SERDE()
+        self.value_serde = serde_from_string(self.config.VALUE_SERDE)
         self.value_serde.configure(self.config, False)
 
         self.recordCollector = RecordCollector(self.producer, self.key_serde, self.value_serde)

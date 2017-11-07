@@ -13,7 +13,7 @@ class FloatSerializer(Serializer):
         return struct.pack(fmt_str, data)
 
     def configure(self, configs, is_key):
-        self.double = extract_config_property(configs, is_key, 'SERIALIZER_DOUBLE_PRECISION')
+        self.double = extract_config_property(configs, is_key, 'SERIALIZER_DOUBLE_PRECISION').lower() == 'true'
 
     def close(self):
         pass
@@ -28,7 +28,7 @@ class FloatDeserializer(Deserializer):
         return struct.unpack(fmt_str, data)[0]
 
     def configure(self, configs, is_key):
-        self.double = extract_config_property(configs, is_key, 'DESERIALIZER_DOUBLE_PRECISION')
+        self.double = extract_config_property(configs, is_key, 'DESERIALIZER_DOUBLE_PRECISION').lower() == 'true'
 
     def close(self):
         pass

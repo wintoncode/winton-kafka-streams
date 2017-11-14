@@ -2,8 +2,10 @@ import queue
 import logging
 
 from confluent_kafka import TopicPartition
+from confluent_kafka.cimpl import KafkaException, KafkaError
 
-from winton_kafka_streams.processor.serialization.serdes import serde_from_string
+from ..processor.serialization.serdes import serde_from_string
+from ..errors.task_migrated_error import TaskMigratedError
 from ._record_collector import RecordCollector
 from .processor_context import ProcessorContext
 from ._punctuation_queue import PunctuationQueue
@@ -29,6 +31,12 @@ class DummyRecord:
 
     def timestamp(self):
         return self._timestamp
+
+
+_taskMigratedErrorCodes = [KafkaError.ILLEGAL_GENERATION,
+                           KafkaError.REBALANCE_IN_PROGRESS,
+                           KafkaError.UNKNOWN_MEMBER_ID,
+                           KafkaError.INVALID_PRODUCER_EPOCH]
 
 
 class StreamTask:
@@ -122,26 +130,38 @@ class StreamTask:
         self.context.currentNode = None
 
     def commit(self):
-        self.recordCollector.flush()
-        self.commitOffsets()
+        try:
+            self.recordCollector.flush()
+            self.commit_offsets()
+            self.commitRequested = False
+        except Exception as e:
+            self.log.exception(e)
+            raise
 
-    def commitOffsets(self):
+    def commit_offsets(self):
         """ Commit consumed offsets if needed """
 
         # may be asked to commit on rebalance or shutdown but
         # should only commit if the processor has requested.
-        if self.commitOffsetNeeded:
-            offsetsToCommit = [TopicPartition(t, p, o+1) for ((t, p), o) in self.consumedOffsets.items()]
-            self.consumer.commit(offsets=offsetsToCommit, async=False)
-            self.consumedOffsets.clear()
-            self.commitOffsetNeeded = False
+        try:
+            if self.commitOffsetNeeded:
+                offsets_to_commit = [TopicPartition(t, p, o+1) for ((t, p), o) in self.consumedOffsets.items()]
+                self.consumer.commit(offsets=offsets_to_commit, async=False)
+                self.consumedOffsets.clear()
+                self.commitOffsetNeeded = False
 
-        self.commitRequested = False
+        except KafkaException as ke:
+            kafka_error = ke.args[0].code()
 
-    def commitNeeded(self):
+            if kafka_error in _taskMigratedErrorCodes:
+                raise TaskMigratedError(f'{self} migrated.')
+            else:
+                raise
+
+    def commit_needed(self):
         return self.commitRequested
 
-    def needCommit(self):
+    def need_commit(self):
         self.commitRequested = True
 
     def schedule(self, interval):

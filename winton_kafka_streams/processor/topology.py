@@ -5,8 +5,8 @@ Classes for building a graph topology comprising processor derived nodes
 
 import logging
 
+from winton_kafka_streams.errors.kafka_streams_error import KafkaStreamsError
 from .processor import SourceProcessor, SinkProcessor
-from ..kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

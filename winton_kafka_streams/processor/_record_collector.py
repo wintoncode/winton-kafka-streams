@@ -5,7 +5,7 @@ Record collector sends produced results to kafka topic
 
 import logging
 
-from ..kafka_streams_error import KafkaStreamsError
+from ..errors.kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

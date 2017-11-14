@@ -11,6 +11,7 @@ import sys
 import collections
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
+from winton_kafka_streams.state import InMemoryKeyValueStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
 
@@ -22,7 +23,7 @@ class WordCount(BaseProcessor):
 
     def initialise(self, _name, _context):
         super().initialise(_name, _context)
-        self.word_counts = collections.Counter()
+        self.word_count_store = _context.get_store('counts')
         # dirty_words tracks what words have changed since the last punctuate
         self.dirty_words = set()
         # output updated counts every 10 seconds
@@ -31,12 +32,14 @@ class WordCount(BaseProcessor):
     def process(self, key, value):
         words = value.split()
         log.debug(f'words list ({words})')
-        self.word_counts.update(words)
+        for word in words:
+            count = self.word_count_store.get(word, 0)
+            self.word_count_store[word] = count + 1
         self.dirty_words |= set(words)
 
     def punctuate(self, timestamp):
         for word in self.dirty_words:
-            count = str(self.word_counts[word])
+            count = str(self.word_count_store[word])
             log.debug(f'Forwarding to sink ({word}, {count})')
             self.context.forward(word, count)
         self.dirty_words = set()
@@ -49,6 +52,7 @@ def run(config_file):
         topology_builder. \
             source('input-value', ['wks-wordcount-example-topic']). \
             processor('count', WordCount, 'input-value'). \
+            state_store('counts', InMemoryKeyValueStore, 'count'). \
             sink('output-count', 'wks-wordcount-example-count', 'count')
 
     wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)

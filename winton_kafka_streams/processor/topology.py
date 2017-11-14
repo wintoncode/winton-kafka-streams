@@ -123,6 +123,7 @@ class TopologyBuilder:
             raise KafkaStreamsError(f"Store with name {store.name} already exists")
 
         def build_store():
+            log.debug(f'TopologyBuilder is building state store {store_name}')
             return store_type(store_name), processors
 
         def _name():

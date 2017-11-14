@@ -141,7 +141,6 @@ class StreamThread:
                                      "This implies that this thread missed a rebalance and dropped out of the "
                                      "consumer group. " +
                                      "Trying to rejoin the consumer group now. %s", error)
-            pass
 
             self.log.debug('Ending stream thread...')
         finally:

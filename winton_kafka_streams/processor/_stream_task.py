@@ -1,15 +1,16 @@
-import queue
 import logging
+import queue
 
 from confluent_kafka import TopicPartition
 from confluent_kafka.cimpl import KafkaException, KafkaError
 
-from ..processor.serialization.serdes import serde_from_string
-from ..errors.task_migrated_error import TaskMigratedError
+from ..errors._kafka_error_codes import _get_invalid_producer_epoch_code
+from ._punctuation_queue import PunctuationQueue
 from ._record_collector import RecordCollector
 from .processor_context import ProcessorContext
-from ._punctuation_queue import PunctuationQueue
 from .wallclock_timestamp import WallClockTimeStampExtractor
+from ..errors.task_migrated_error import TaskMigratedError
+from ..processor.serialization.serdes import serde_from_string
 
 
 class DummyRecord:
@@ -17,6 +18,7 @@ class DummyRecord:
     Dummy implementation of Record that provides the minimum needed
     to supply a timestamp to Context during punctuate.
     """
+
     def __init__(self, timestamp):
         self._timestamp = timestamp
 
@@ -33,10 +35,12 @@ class DummyRecord:
         return self._timestamp
 
 
+
+
 _taskMigratedErrorCodes = [KafkaError.ILLEGAL_GENERATION,
                            KafkaError.REBALANCE_IN_PROGRESS,
                            KafkaError.UNKNOWN_MEMBER_ID,
-                           KafkaError.INVALID_PRODUCER_EPOCH]
+                           _get_invalid_producer_epoch_code()]
 
 
 class StreamTask:
@@ -46,6 +50,7 @@ class StreamTask:
     to an instance of the topology for processing.
 
     """
+
     def __init__(self, _task_id, _application_id, _partitions, _topology_builder, _consumer, _producer, _config):
         self.log = logging.getLogger(__name__ + '(' + str(_task_id) + ')')
         self.task_id = _task_id
@@ -67,6 +72,7 @@ class StreamTask:
         self.context = ProcessorContext(self, self.recordCollector, self.topology.state_stores)
 
         self.punctuation_queue = PunctuationQueue(self.punctuate)
+        # TODO: use the configured timestamp extractor.
         self.timestamp_extractor = WallClockTimeStampExtractor()
         self.current_timestamp = None
 
@@ -145,7 +151,7 @@ class StreamTask:
         # should only commit if the processor has requested.
         try:
             if self.commitOffsetNeeded:
-                offsets_to_commit = [TopicPartition(t, p, o+1) for ((t, p), o) in self.consumedOffsets.items()]
+                offsets_to_commit = [TopicPartition(t, p, o + 1) for ((t, p), o) in self.consumedOffsets.items()]
                 self.consumer.commit(offsets=offsets_to_commit, async=False)
                 self.consumedOffsets.clear()
                 self.commitOffsetNeeded = False

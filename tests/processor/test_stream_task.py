@@ -16,7 +16,8 @@ from winton_kafka_streams.processor.task_id import TaskId
 taskMigratedErrorCodes = [KafkaError.ILLEGAL_GENERATION,
                           KafkaError.UNKNOWN_MEMBER_ID,
                           KafkaError.REBALANCE_IN_PROGRESS,
-                          KafkaError.INVALID_PRODUCER_EPOCH]
+                          47 # INVALID_PRODUCER_EPOCH - not supported in all versions for Conluent Kafka so just use the explicit code in this test
+                          ]
 
 
 @pytest.mark.parametrize("error_code", taskMigratedErrorCodes)

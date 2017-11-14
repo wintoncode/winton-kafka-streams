@@ -23,6 +23,7 @@ import logging
 
 import javaproperties
 
+from winton_kafka_streams.processor.serialization.serdes import BytesSerde, serde_as_string
 from .kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
@@ -46,9 +47,6 @@ It is used as:
 
 """
 APPLICATION_ID = "wkstream.application.id"
-
-
-
 
 #### - Optional Options - ####
 
@@ -74,13 +72,6 @@ Importance: Medium
 CACHE_MAX_BYTES_BUFFERING = 10485760
 
 """
-Default serializer/deserializer class for record keys, implements the Serde interface (see also value.serde)
-Default: Serdes.ByteArray().getClass().getName()
-Importance: Medium
-"""
-KEY_SERDE = None # TODO
-
-"""
 The number of standby replicas for each task
 Default: 0
 Importance: Medium
@@ -99,14 +90,7 @@ Timestamp extractor class that implements the TimestampExtractor interface
 Default: see Timestamp Extractor
 Importance: Medium
 """
-TIMESTAMP_EXTRACTOR = None # TODO
-
-"""
-Default serializer/deserializer class for record values, implements the Serde interface (see also key.serde)
-Default: Serdes.ByteArray().getClass().getName()
-Importance: Medium
-"""
-VALUE_SERDE = None # TODO
+TIMESTAMP_EXTRACTOR = None  #  TODO
 
 """
 A host:port pair pointing to an embedded user defined endpoint that can be used for discovering the locations of state stores within a single Winton Kafka Streams application. The value of this must be different for each instance of the application.
@@ -169,7 +153,7 @@ Partition grouper class that implements the PartitionGrouper interface
 Defatult: see Partition Grouper
 Importance: Low
 """
-PARITION_GROUPER = None # DEBUG
+PARITION_GROUPER = None  # DEBUG
 
 """
 The amount of time in milliseconds to block waiting for input
@@ -191,9 +175,6 @@ Default: 86400000 (millisecons) = 1 day
 Importance: Low
 """
 WINDOWSTORE_CHANGELOG_ADDITIONAL_RETENTION_MS = 86_000_000
-
-
-
 
 #### - Non streams configuration parameters - ####
 
@@ -230,7 +211,7 @@ Consumer
 Default: Integer.MAX_VALUE
 Importance: low
 """
-MAX_POLL_INTERVAL_MS = sys.maxsize # TODO: No max for Python, this is word size - is that correct for Java?
+MAX_POLL_INTERVAL_MS = sys.maxsize  # TODO: No max for Python, this is word size - is that correct for Java?
 
 """
 Consumer
@@ -238,6 +219,59 @@ Default: 1000
 Importance: low
 """
 MAX_POLL_RECORDS = 1000
+
+#### - Serdes Configuration - ####
+
+"""
+Default serializer/deserializer class for record values, implements the Serde interface (see also key.serdes)
+Default: winton_kafka_streams.processor.serialization.serdes.BytesSerde
+Importance: Medium
+"""
+VALUE_SERDE = serde_as_string(BytesSerde)
+
+"""
+Default serializer/deserializer class for record keys, implements the Serde interface (see also value.serdes)
+Default: winton_kafka_streams.processor.serialization.serdes.BytesSerde
+Importance: Medium
+"""
+KEY_SERDE = serde_as_string(BytesSerde)
+
+# StringSerde - encoding
+SERIALIZER_ENCODING = 'utf-8'
+DESERIALIZER_ENCODING = 'utf-8'
+KEY_SERIALIZER_ENCODING = None
+KEY_DESERIALIZER_ENCODING = None
+VALUE_SERIALIZER_ENCODING = None
+VALUE_DESERIALIZER_ENCODING = None
+
+# StringSerde - error mode
+SERIALIZER_ERROR = 'strict'
+DESERIALIZER_ERROR = 'strict'
+KEY_SERIALIZER_ERROR = None
+KEY_DESERIALIZER_ERROR = None
+VALUE_SERIALIZER_ERROR = None
+VALUE_DESERIALIZER_ERROR = None
+
+# IntegerSerde - byte order
+SERIALIZER_BYTEORDER = 'little'
+DESERIALIZER_BYTEORDER = 'little'
+KEY_SERIALIZER_BYTEORDER = None
+KEY_DESERIALIZER_BYTEORDER = None
+VALUE_SERIALIZER_BYTEORDER = None
+VALUE_DESERIALIZER_BYTEORDER = None
+
+# IntegerSerde - signed integer
+SERIALIZER_SIGNED = 'true'
+DESERIALIZER_SIGNED = 'true'
+KEY_SERIALIZER_SIGNED = None
+KEY_DESERIALIZER_SIGNED = None
+VALUE_SERIALIZER_SIGNED = None
+VALUE_DESERIALIZER_SIGNED = None
+
+# IntegerSerde - int size in bytes
+SERIALIZER_INT_SIZE = 4
+KEY_SERIALIZER_INT_SIZE = None
+VALUE_SERIALIZER_INT_SIZE = None
 
 
 def read_local_config(config_file):

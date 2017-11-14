@@ -3,6 +3,7 @@ import logging
 
 from confluent_kafka import TopicPartition
 
+from winton_kafka_streams.processor.serialization.serdes import serde_from_string
 from ._record_collector import RecordCollector
 from .processor_context import ProcessorContext
 from ._punctuation_queue import PunctuationQueue
@@ -37,7 +38,7 @@ class StreamTask:
     to an instance of the topology for processing.
 
     """
-    def __init__(self, _task_id, _application_id, _partitions, _topology_builder, _consumer, _producer):
+    def __init__(self, _task_id, _application_id, _partitions, _topology_builder, _consumer, _producer, _config):
         self.log = logging.getLogger(__name__ + '(' + str(_task_id) + ')')
         self.task_id = _task_id
         self.application_id = _application_id
@@ -45,8 +46,14 @@ class StreamTask:
         self.topology = _topology_builder.build()
         self.consumer = _consumer
         self.producer = _producer
+        self.config = _config
 
-        self.recordCollector = RecordCollector(self.producer)
+        self.key_serde = serde_from_string(self.config.KEY_SERDE)
+        self.key_serde.configure(self.config, True)
+        self.value_serde = serde_from_string(self.config.VALUE_SERDE)
+        self.value_serde.configure(self.config, False)
+
+        self.recordCollector = RecordCollector(self.producer, self.key_serde, self.value_serde)
 
         self.queue = queue.Queue()
         self.context = ProcessorContext(self, self.recordCollector, self.topology.state_stores)
@@ -82,10 +89,15 @@ class StreamTask:
         self.context.currentRecord = record
         self.current_timestamp = self.timestamp_extractor.extract(record, self.current_timestamp)
 
-        self.context.currentNode = self.topology.sources[record.topic()]
-        self.topology.sources[record.topic()].process(record.key(), record.value())
+        topic = record.topic()
+        raw_key = record.key()
+        key = None if raw_key is None else self.key_serde.deserializer.deserialize(topic, record.key())
+        value = self.value_serde.deserializer.deserialize(topic, record.value())
 
-        self.consumedOffsets[(record.topic(), record.partition())] = record.offset()
+        self.context.currentNode = self.topology.sources[topic]
+        self.topology.sources[topic].process(key, value)
+
+        self.consumedOffsets[(topic, record.partition())] = record.offset()
         self.commitOffsetNeeded = True
 
         self.context.currentRecord = None

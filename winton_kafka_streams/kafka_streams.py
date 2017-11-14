@@ -69,7 +69,7 @@ class KafkaStreams:
                 return new_state in (self.RUNNING, self.REBALANCING, self.PENDING_SHUTDOWN)
             elif self is self.PENDING_SHUTDOWN:
                 return new_state in (self.NOT_RUNNING,)
-            else: # including NOT_RUNNING
+            else:  # including NOT_RUNNING
                 return False
 
         def is_running(self):

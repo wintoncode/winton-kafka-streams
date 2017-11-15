@@ -16,7 +16,7 @@ class MyTestProcessor(BaseProcessor):
     pass
 
 
-def test_Given_StreamAlreadyStarted_When_CallStartAgain_Then_RaiseError():
+def test__given__stream_already_started__when__call_start_again__then__raise_error():
     kafka_config.NUM_STREAM_THREADS = 0
     topology_builder = TopologyBuilder()
 

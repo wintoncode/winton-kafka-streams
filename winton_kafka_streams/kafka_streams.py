@@ -7,7 +7,7 @@ import logging
 import threading
 from enum import Enum
 
-from winton_kafka_streams.errors.kafka_streams_error import KafkaStreamsError
+from .errors.kafka_streams_error import KafkaStreamsError
 from .kafka_client_supplier import KafkaClientSupplier
 from .processor import StreamThread
 

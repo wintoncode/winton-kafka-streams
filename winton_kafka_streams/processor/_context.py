@@ -6,7 +6,7 @@ Processor context is the link to kafka from individual processor objects
 import functools
 import logging
 
-from winton_kafka_streams.errors.kafka_streams_error import KafkaStreamsError
+from ..errors.kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

@@ -1,3 +1,4 @@
+import pytest
 from winton_kafka_streams.state.in_memory_key_value_store import InMemoryKeyValueStore
 
 
@@ -9,3 +10,8 @@ def test_inMemoryKeyValueStore():
 
     store['a'] = 2
     assert store['a'] == 2
+
+    del store['a']
+    assert store.get('a') is None
+    with pytest.raises(KeyError):
+        store['a']

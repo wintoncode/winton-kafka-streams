@@ -33,7 +33,7 @@ class ProcessorContext(_context.Context):
 
         """
 
-        self.task.needCommit()
+        self.task.need_commit()
 
     def forward(self, key, value):
         """

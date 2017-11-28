@@ -17,14 +17,14 @@ kafka_config.read_local_config('path/to/kafka.streams.config')
 
 """
 
+import logging
 import os
 import sys
-import logging
 
 import javaproperties
 
-from winton_kafka_streams.processor.serialization.serdes import BytesSerde, serde_as_string
-from .kafka_streams_error import KafkaStreamsError
+from .processor.serialization.serdes import BytesSerde, serde_as_string
+from .errors.kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

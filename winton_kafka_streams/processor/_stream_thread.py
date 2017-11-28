@@ -8,14 +8,13 @@ import threading
 from enum import Enum
 
 from confluent_kafka import KafkaError
-from confluent_kafka.cimpl import KafkaException
 
+from ..errors.task_migrated_error import TaskMigratedError
 from .task_id import TaskId
 from ._stream_task import StreamTask
 
 
 class StreamThread:
-
     """
       Stream thread states are the possible states that a stream thread can be in.
       A thread must only be in one state at a time
@@ -50,6 +49,7 @@ class StreamThread:
                      +-------------+
       </pre>
     """
+
     class State(Enum):
         NOT_RUNNING = 0
         RUNNING = 1
@@ -72,7 +72,7 @@ class StreamThread:
                 return False
 
         def is_running(self):
-            return not self in (self.NOT_RUNNING, self.PENDING_SHUTDOWN)
+            return self not in (self.NOT_RUNNING, self.PENDING_SHUTDOWN)
 
         def __str__(self):
             return self.name
@@ -103,7 +103,7 @@ class StreamThread:
     def set_state(self, new_state):
         old_state = self.state
         if not old_state.valid_transition_to(new_state):
-            self.log.warn(f'Unexpected state transition from {old_state} to {new_state}.')
+            self.log.warning(f'Unexpected state transition from {old_state} to {new_state}.')
         else:
             self.log.info(f'State transition from {old_state} to {new_state}.')
         self.state = new_state
@@ -111,7 +111,7 @@ class StreamThread:
             self.state_listener(self, old_state, new_state)
 
     def set_state_when_not_in_pending_shutdown(self, new_state):
-        if not self.state is self.State.PENDING_SHUTDOWN:
+        if self.state is not self.State.PENDING_SHUTDOWN:
             self.set_state(new_state)
 
     def set_state_listener(self, listener):
@@ -130,15 +130,21 @@ class StreamThread:
             self.consumer.subscribe(self.topics, on_assign=self.on_assign, on_revoke=self.on_revoke)
 
             while self.still_running():
-                records = self.poll_requests(0.1)
-                if records:
-                    self.log.debug(f'Processing {len(records)} record(s)')
-                    self.add_records_to_tasks(records)
-                    self.process_and_punctuate()
+                try:
+                    records = self.poll_requests(0.1)
+                    if records:
+                        self.log.debug(f'Processing {len(records)} record(s)')
+                        self.add_records_to_tasks(records)
+                        self.process_and_punctuate()
+                except TaskMigratedError as error:
+                    self.log.warning(f"Detected a task that got migrated to another thread. " +
+                                     "This implies that this thread missed a rebalance and dropped out of the "
+                                     "consumer group. " +
+                                     "Trying to rejoin the consumer group now. %s", error)
 
             self.log.debug('Ending stream thread...')
         finally:
-            self.commitAll()
+            self.commit_all()
             self.shutdown()
 
     def poll_requests(self, poll_timeout):
@@ -178,22 +184,14 @@ class StreamThread:
 
         for task in self.tasks:
             task.maybe_punctuate()
-            if task.commitNeeded():
+            if task.commit_needed():
                 self.commit(task)
 
     def commit(self, task):
-        try:
-            self.log.debug('Commit task "%s"', task)
-            task.commit()
-        except CommitFailedException as cfe:
-            self.log.warning('Failed to commit')
-            self.log.exception(cfe)
-            pass
-        except KafkaException as ke:
-            self.log.exception(ke)
-            raise
+        self.log.debug('Commit task "%s"', task)
+        task.commit()
 
-    def commitAll(self):
+    def commit_all(self):
         for task in self.tasks:
             self.commit(task)
 
@@ -219,7 +217,7 @@ class StreamThread:
 
     def on_revoke(self, consumer, partitions):
         self.log.debug('Revoking partitions %s', partitions)
-        self.commitAll()
+        self.commit_all()
         self.set_state_when_not_in_pending_shutdown(self.State.PARTITIONS_REVOKED)
         self.tasks = []
 

@@ -7,9 +7,9 @@ import logging
 import threading
 from enum import Enum
 
-from .processor import StreamThread
+from .errors.kafka_streams_error import KafkaStreamsError
 from .kafka_client_supplier import KafkaClientSupplier
-from .kafka_streams_error import KafkaStreamsError
+from .processor import StreamThread
 
 log = logging.getLogger(__name__)
 

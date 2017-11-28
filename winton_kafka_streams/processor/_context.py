@@ -3,10 +3,10 @@ Processor context is the link to kafka from individual processor objects
 
 """
 
-import logging
 import functools
+import logging
 
-from ..kafka_streams_error import KafkaStreamsError
+from ..errors.kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
 

@@ -56,7 +56,8 @@ class StreamTask:
         self.recordCollector = RecordCollector(self.producer, self.key_serde, self.value_serde)
 
         self.queue = queue.Queue()
-        self.context = ProcessorContext(self, self.recordCollector, self.topology.state_stores)
+        self.context = ProcessorContext(self.task_id, self,
+                self.recordCollector, self.topology.state_stores)
 
         self.punctuation_queue = PunctuationQueue(self.punctuate)
         self.timestamp_extractor = WallClockTimeStampExtractor()

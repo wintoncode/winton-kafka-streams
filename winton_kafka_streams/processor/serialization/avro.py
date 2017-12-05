@@ -1,44 +1,51 @@
-from confluent_kafka.avro import CachedSchemaRegistryClient
+from confluent_kafka.avro import CachedSchemaRegistryClient, MessageSerializer
 from confluent_kafka.avro import loads as avro_loads
 
 from ._serde import extract_config_property
 from ._deserializer import Deserializer
 from ._serializer import Serializer
-import struct
 
 
-def _configure(self, configs, is_key):
-    schema_registry_url = extract_config_property(configs, is_key, 'AVRO_SCHEMA_REGISTRY')
-    key_schema = extract_config_property(configs, is_key, 'AVRO_KEY_SCHEMA')
-    value_schema = extract_config_property(configs, is_key, 'AVRO_VALUE_SCHEMA')
+class AvroHelper:
+    def __init__(self):
+        self._is_key = False
+        self._schema_registry = None
+        self._serializer = None
+        self._schema = None
 
-    if schema_registry_url is None:
-        raise Exception("Missing Avro Schema Registry Url")
-    else:
-        self._schema_registry = CachedSchemaRegistryClient(url=schema_registry_url)
+    def configure(self, configs, is_key):
+        self._is_key = is_key
+        schema_registry_url = extract_config_property(configs, is_key, 'AVRO_SCHEMA_REGISTRY')
+        schema = extract_config_property(configs, is_key, 'AVRO_SCHEMA')
 
-    if key_schema is None:
-        raise Exception("Missing Avro Key Schema")
-    else:
-        self._key_schema = avro_loads(key_schema)
+        if schema_registry_url is None:
+            raise Exception("Missing Avro Schema Registry Url")
+        else:
+            self._schema_registry = CachedSchemaRegistryClient(url=schema_registry_url)
+            self._serializer = MessageSerializer(registry_client=self._schema_registry)
 
-    if value_schema is None:
-        raise Exception("Missing Avro Value Schema")
-    else:
-        self._value_schema = avro_loads(value_schema)
+        if schema:
+            self._schema = avro_loads(schema)
+
+    def serialize(self, topic, data):
+        if self._schema is None:
+            raise Exception("Missing Avro Schema")
+
+        return self._serializer.encode_record_with_schema(topic, self._schema, data, is_key=self._is_key)
+
+    def deserialize(self, topic, data):
+        return self._serializer.decode_message(data)
 
 
 class AvroSerializer(Serializer):
     def __init__(self):
-        self._schema_registry = None
-        self._key_schema = None
-        self._value_schema = None
+        self._avro_helper = AvroHelper()
 
     def serialize(self, topic, data):
-        return struct.pack('f', data)
+        return self._avro_helper.serialize(topic, data)
 
     def configure(self, configs, is_key):
-        _configure(self, configs, is_key)
+        self._avro_helper.configure(configs, is_key)
 
     def close(self):
         pass
@@ -46,15 +53,13 @@ class AvroSerializer(Serializer):
 
 class AvroDeserializer(Deserializer):
     def __init__(self):
-        self._schema_registry = None
-        self._key_schema = None
-        self._value_schema = None
+        self._avro_helper = AvroHelper()
 
     def deserialize(self, topic, data):
-        return struct.unpack('f', data)[0]
+        return self._avro_helper.deserialize(topic, data)
 
     def configure(self, configs, is_key):
-        _configure(self, configs, is_key)
+        self._avro_helper.configure(configs, is_key)
 
     def close(self):
         pass

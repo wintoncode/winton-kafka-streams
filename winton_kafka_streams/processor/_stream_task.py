@@ -66,7 +66,13 @@ class StreamTask:
         self.commitOffsetNeeded = False
         self.consumedOffsets = {}
 
+        self._init_state_stores()
         self._init_topology(self.context)
+
+    def _init_state_stores(self):
+        self.log.debug(f'Initialising state stores')
+        for store in self.topology.state_stores.values():
+            store.initialise(self.context, store)
 
     def _init_topology(self, context):
         for node in self.topology.nodes.values():

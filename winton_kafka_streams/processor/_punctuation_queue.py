@@ -2,7 +2,9 @@ from queue import PriorityQueue
 from collections import namedtuple
 
 
-PunctuationSchedule = namedtuple('PunctuationSchedule', ['timestamp', 'node', 'interval'])
+class PunctuationSchedule(namedtuple('PunctuationSchedule', ['timestamp', 'node', 'interval'])):
+    def __lt__(self, other):
+        return self.timestamp < other.timestamp
 
 
 class PunctuationQueue:

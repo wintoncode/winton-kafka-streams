@@ -23,3 +23,10 @@ def test_punctuation_queue():
     assert len(punctuations) == 2
 
     assert punctuations == [('node', 0), ('node', 100)]
+
+
+def test_punctuation_schedule_can_compare_entires_with_same_timestamp():
+    schedule1 = punctuation_queue.PunctuationSchedule(123, {}, 100)
+    schedule2 = punctuation_queue.PunctuationSchedule(123, {}, 100)
+
+    assert not schedule1 < schedule2

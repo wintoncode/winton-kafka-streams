@@ -13,6 +13,10 @@ class AvroHelper:
         self._serializer = None
         self._schema = None
 
+    def _set_serializer(self, schema_registry):
+        self._schema_registry = schema_registry
+        self._serializer = MessageSerializer(registry_client=self._schema_registry)
+
     def configure(self, configs, is_key):
         self._is_key = is_key
         schema_registry_url = extract_config_property(configs, is_key, 'AVRO_SCHEMA_REGISTRY')
@@ -21,8 +25,7 @@ class AvroHelper:
         if schema_registry_url is None:
             raise Exception("Missing Avro Schema Registry Url")
         else:
-            self._schema_registry = CachedSchemaRegistryClient(url=schema_registry_url)
-            self._serializer = MessageSerializer(registry_client=self._schema_registry)
+            self._set_serializer(CachedSchemaRegistryClient(url=schema_registry_url))
 
         if schema:
             self._schema = avro_loads(schema)

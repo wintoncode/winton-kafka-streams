@@ -1,15 +1,44 @@
+import io
+import struct
+from confluent_kafka.avro import loads as avro_loads
 from .mock_schema_registry import MockSchemaRegistryClient
 from winton_kafka_streams.processor.serialization.serdes import AvroSerde
-import winton_kafka_streams.kafka_config as Config
+import winton_kafka_streams.kafka_config as config
+
+string_avro = '{"type": "string"}'
+
+
+def create_serde(registry, schema):
+    serde = AvroSerde()
+    config.AVRO_SCHEMA_REGISTRY = 'nowhere'
+    config.KEY_AVRO_SCHEMA = schema
+
+    serde.configure(config, True)
+    serde.serializer._avro_helper._set_serializer(registry)
+    serde.deserializer._avro_helper._set_serializer(registry)
+
+    serde.test_registry = registry
+    return serde
 
 
 def test_serialize_avro():
     registry = MockSchemaRegistryClient()
-    serde = AvroSerde()
-    Config.AVRO_SCHEMA_REGISTRY = 'http://localhost:9000'
-    Config.KEY_AVRO_SCHEMA = '{"type": "string"}'
+    serde = create_serde(registry, string_avro)
 
-    serde.configure(Config, True)
-    serde.serializer._avro_helper._schema_registry = registry
     message = serde.serializer.serialize('topic', 'data')
-    assert('', message)
+    message_io = io.BytesIO(message)
+    magic, _, length, string = struct.unpack('>bIb4s', message_io.read(10))
+    assert(0 == magic)
+    assert(8 == length)  # (==4) uses variable-length zig-zag encoding
+    assert(b'data' == string)
+    message_io.close()
+
+
+def test_deserialize_avro():
+    registry = MockSchemaRegistryClient()
+    serde = create_serde(registry, string_avro)
+    schema_id = registry.register('topic-value', avro_loads(string_avro))
+
+    serialized = b'\0' + schema_id.to_bytes(4, 'big') + b'\x08data'
+    message = serde.deserializer.deserialize('ignored', serialized)
+    assert('data' == message)

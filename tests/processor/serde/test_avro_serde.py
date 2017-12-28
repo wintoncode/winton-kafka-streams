@@ -27,8 +27,9 @@ def test_serialize_avro():
 
     message = serde.serializer.serialize('topic', 'data')
     message_io = io.BytesIO(message)
-    magic, _, length, string = struct.unpack('>bIb4s', message_io.read(10))
+    magic, schema_id, length, string = struct.unpack('>bIb4s', message_io.read(10))
     assert(0 == magic)
+    assert(schema_id in registry.id_to_schema)
     assert(8 == length)  # (==4) uses variable-length zig-zag encoding
     assert(b'data' == string)
     message_io.close()

@@ -12,8 +12,11 @@ with open('README.md') as readme_file:
     readme = readme_file.read()
 
 requirements = [
+    'javaproperties',
+
     'confluent-kafka',
-    'javaproperties'
+    'requests',
+    'avro-python3'
 ]
 
 test_requirements = [

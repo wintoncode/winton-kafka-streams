@@ -4,7 +4,7 @@ Configuration values that may be set to control behaviour of Winton Kafka Stream
 Configuration may either be set inline in your application using:
 
 import kafka_config
-kafka_config.BOOSTRAP_SERVERS = 'localhost:9092'
+kafka_config.BOOTSTRAP_SERVERS = 'localhost:9092'
 
 or as a file in java properties format. The property names are identical to
 those used in the Java implementation for ease of sharing between both.

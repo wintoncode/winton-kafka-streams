@@ -3,7 +3,7 @@ Json Serde
 
 """
 from ..json import JsonSerializer, JsonDeserializer
-from ._wrapper_serde import WrapperSerde
+from .wrapper_serde import WrapperSerde
 
 
 class JsonSerde(WrapperSerde):

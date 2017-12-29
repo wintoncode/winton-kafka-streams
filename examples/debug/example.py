@@ -9,7 +9,6 @@ import logging
 import time
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.processor.serialization.serdes import IntegerSerde, serde_as_string
 from winton_kafka_streams.state.simple import SimpleStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
@@ -33,8 +32,6 @@ class DoubleProcessor(BaseProcessor):
 
 def _debug_run(config_file):
     kafka_config.read_local_config(config_file)
-    kafka_config.KEY_SERDE = serde_as_string(IntegerSerde)
-    kafka_config.VALUE_SERDE = serde_as_string(IntegerSerde)
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \

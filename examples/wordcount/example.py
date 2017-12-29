@@ -6,15 +6,13 @@ Main entrypoints
 """
 
 import logging
-import time
 import sys
+import time
 
-from examples.wordcount import StringIntSerde
-from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.processor.serialization.serdes import serde_as_string, StringSerde
-from winton_kafka_streams.state import InMemoryKeyValueStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
+from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
+from winton_kafka_streams.state import InMemoryKeyValueStore
 
 log = logging.getLogger(__name__)
 
@@ -49,9 +47,7 @@ class WordCount(BaseProcessor):
 def run(config_file, binary_output):
     kafka_config.read_local_config(config_file)
     if binary_output:
-        kafka_config.VALUE_SERDE = serde_as_string(StringIntSerde)
-    else:
-        kafka_config.VALUE_SERDE = serde_as_string(StringSerde)
+        kafka_config.VALUE_SERDE = 'examples.wordcount.custom_serde.StringIntSerde'
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \

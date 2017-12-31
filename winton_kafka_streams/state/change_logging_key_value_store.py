@@ -23,7 +23,7 @@ class ChangeLoggingKeyValueStore:
         return self.inner.get(key, default)
 
 
-    def __delitem_(self, key):
+    def __delitem__(self, key):
         v = self.inner.__delitem__(key)
         self.change_logger.log_change(key, None)
         return v

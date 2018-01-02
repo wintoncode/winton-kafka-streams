@@ -8,7 +8,6 @@ import pandas as pd
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
-from winton_kafka_streams.processor.serialization.serdes import StringSerde, serde_as_string
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,8 +90,6 @@ def run(config_file=None):
     """
     if config_file:
         kafka_config.read_local_config(config_file)
-    kafka_config.KEY_SERDE = serde_as_string(StringSerde)
-    kafka_config.VALUE_SERDE = serde_as_string(StringSerde)
 
     with TopologyBuilder() as topology_builder:
         topology_builder. \

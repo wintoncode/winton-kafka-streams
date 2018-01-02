@@ -4,7 +4,7 @@ String Serde
 """
 from ..string import StringSerializer, StringDeserializer
 from ..bytes import BytesSerializer, BytesDeserializer
-from ._wrapper_serde import WrapperSerde
+from .wrapper_serde import WrapperSerde
 
 
 class StringSerde(WrapperSerde):

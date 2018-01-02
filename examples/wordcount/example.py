@@ -6,14 +6,13 @@ Main entrypoints
 """
 
 import logging
-import time
 import sys
-import collections
+import time
 
-from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.state import InMemoryKeyValueStore, ChangeLoggingKeyValueStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
+from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
+from winton_kafka_streams.state import InMemoryKeyValueStore, ChangeLoggingKeyValueStore
 
 log = logging.getLogger(__name__)
 
@@ -33,8 +32,8 @@ class WordCount(BaseProcessor):
         words = value.split()
         log.debug(f'words list ({words})')
         for word in words:
-            count = self.word_count_store.get(word, '0')
-            self.word_count_store[word] = str(int(count) + 1)
+            count = self.word_count_store.get(word, 0)
+            self.word_count_store[word] = count + 1
         self.dirty_words |= set(words)
 
     def punctuate(self, timestamp):
@@ -45,8 +44,10 @@ class WordCount(BaseProcessor):
         self.dirty_words = set()
 
 
-def run(config_file):
+def run(config_file, binary_output):
     kafka_config.read_local_config(config_file)
+    if binary_output:
+        kafka_config.VALUE_SERDE = 'examples.wordcount.custom_serde.StringIntSerde'
 
     count_store = lambda name: ChangeLoggingKeyValueStore(name, InMemoryKeyValueStore)
     with TopologyBuilder() as topology_builder:
@@ -74,6 +75,9 @@ if __name__ == '__main__':
     parser.add_argument('--config-file', '-c',
                         help="Local configuration - will override internal defaults",
                         default='config.properties')
+    parser.add_argument('--binary-output',
+                        help="Output topic will contain 4-byte integers",
+                        action='store_true')
     parser.add_argument('--verbose', '-v',
                         help="Increase versbosity (repeat to increase level)",
                         action='count', default=0)
@@ -82,4 +86,4 @@ if __name__ == '__main__':
     levels = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
     level = levels.get(args.verbose, logging.DEBUG)
     logging.basicConfig(stream=sys.stdout, level=level)
-    run(args.config_file)
+    run(args.config_file, binary_output=args.binary_output)

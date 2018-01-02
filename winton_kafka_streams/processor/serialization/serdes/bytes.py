@@ -3,7 +3,7 @@ Bytes Serde (default)
 
 """
 from ..bytes import BytesSerializer, BytesDeserializer
-from ._wrapper_serde import WrapperSerde
+from .wrapper_serde import WrapperSerde
 
 
 class BytesSerde(WrapperSerde):

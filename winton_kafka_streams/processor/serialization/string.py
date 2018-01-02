@@ -9,7 +9,7 @@ class StringSerializer(Serializer):
         self.on_error = 'strict'
 
     def serialize(self, topic, data):
-        return data.encode(self.encoding, self.on_error)
+        return str(data).encode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
         self.encoding = extract_config_property(configs, is_key, 'SERIALIZER_ENCODING')

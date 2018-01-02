@@ -3,6 +3,10 @@ class InMemoryKeyValueStore:
         self.name = name
         self.dict = {}
 
+    def initialise(self, context, root):
+        pass
+        # TODO: register with context, passing restore callback
+
     def __setitem__(self, key, value):
         self.dict[key] = value
 

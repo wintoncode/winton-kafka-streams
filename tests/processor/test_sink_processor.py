@@ -5,6 +5,7 @@ Test of sink processor behaviour
 import unittest.mock as mock
 
 import winton_kafka_streams.processor as wks_processor
+from winton_kafka_streams.processor.task_id import TaskId
 
 _expected_timestamp = 1234567890
 
@@ -22,7 +23,10 @@ def test_sinkProcessorProcess():
 
     with mock.patch('winton_kafka_streams.processor.ProcessorContext.timestamp', new_callable=mock.PropertyMock) as mock_timestamp:
         mock_timestamp.return_value = _expected_timestamp
-        processor_context = wks_processor.ProcessorContext(None, None, {})
+        mock_task = mock.Mock()
+        mock_task.application_id = 'test_id'
+        mock_task_id = TaskId('test_group', 0)
+        processor_context = wks_processor.ProcessorContext(mock_task_id, mock_task, None, {})
         processor_context.recordCollector = mock.MagicMock()
 
         sink = wks_processor.SinkProcessor('topic1')

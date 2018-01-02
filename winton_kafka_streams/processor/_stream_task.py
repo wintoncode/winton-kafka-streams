@@ -69,7 +69,8 @@ class StreamTask:
         self.recordCollector = RecordCollector(self.producer, self.key_serde, self.value_serde)
 
         self.queue = queue.Queue()
-        self.context = ProcessorContext(self, self.recordCollector, self.topology.state_stores)
+        self.context = ProcessorContext(self.task_id, self,
+                self.recordCollector, self.topology.state_stores)
 
         self.punctuation_queue = PunctuationQueue(self.punctuate)
         # TODO: use the configured timestamp extractor.
@@ -80,7 +81,13 @@ class StreamTask:
         self.commitOffsetNeeded = False
         self.consumedOffsets = {}
 
+        self._init_state_stores()
         self._init_topology(self.context)
+
+    def _init_state_stores(self):
+        self.log.debug(f'Initialising state stores')
+        for store in self.topology.state_stores.values():
+            store.initialise(self.context, store)
 
     def _init_topology(self, context):
         for node in self.topology.nodes.values():

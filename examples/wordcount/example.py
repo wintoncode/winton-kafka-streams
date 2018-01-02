@@ -11,7 +11,7 @@ import sys
 import collections
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.state import InMemoryKeyValueStore
+from winton_kafka_streams.state import InMemoryKeyValueStore, ChangeLoggingKeyValueStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
 
@@ -33,8 +33,8 @@ class WordCount(BaseProcessor):
         words = value.split()
         log.debug(f'words list ({words})')
         for word in words:
-            count = self.word_count_store.get(word, 0)
-            self.word_count_store[word] = count + 1
+            count = self.word_count_store.get(word, '0')
+            self.word_count_store[word] = str(int(count) + 1)
         self.dirty_words |= set(words)
 
     def punctuate(self, timestamp):
@@ -48,11 +48,12 @@ class WordCount(BaseProcessor):
 def run(config_file):
     kafka_config.read_local_config(config_file)
 
+    count_store = lambda name: ChangeLoggingKeyValueStore(name, InMemoryKeyValueStore)
     with TopologyBuilder() as topology_builder:
         topology_builder. \
             source('input-value', ['wks-wordcount-example-topic']). \
             processor('count', WordCount, 'input-value'). \
-            state_store('counts', InMemoryKeyValueStore, 'count'). \
+            state_store('counts', count_store, 'count'). \
             sink('output-count', 'wks-wordcount-example-count', 'count')
 
     wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)

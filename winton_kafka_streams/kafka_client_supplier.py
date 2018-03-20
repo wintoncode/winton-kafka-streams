@@ -14,7 +14,7 @@ class KafkaClientSupplier:
         log.debug('Starting consumer...')
         # TODO: Must set all config values applicable to a consumer
         consumer_args = {'bootstrap.servers': self.config.BOOTSTRAP_SERVERS,
-                               'group.id': 'testgroup',
+                               'group.id': self.config.APPLICATION_ID,
                                'default.topic.config': {'auto.offset.reset':
                                                         self.config.AUTO_OFFSET_RESET},
                                'enable.auto.commit': self.config.ENABLE_AUTO_COMMIT}

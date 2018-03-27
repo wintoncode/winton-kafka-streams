@@ -14,6 +14,12 @@ Here are questions you can answer before you file a bug to make sure you're not 
 
 GitHub supports [markdown](https://help.github.com/articles/github-flavored-markdown/), so when filing bugs make sure you check the formatting before clicking submit.
 
+## Contributor License Agreement ("CLA")
+
+In order to accept your pull request, we need you to submit a CLA. You only need to do this once to work on any of Winton's open source projects.
+
+The text of the CLA can be seen in this gist: [Winton CLA](https://cla-assistant.io/wintoncode/winton-kafka-streams)
+
 ## Contributing code and content
 Make sure you can build the code and run the tests. Familiarize yourself with the project workflow and our coding conventions. If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests.
 

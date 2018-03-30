@@ -6,6 +6,7 @@ Kafka consumer poll thread
 import logging
 import threading
 from enum import Enum
+from itertools import zip_longest
 
 from confluent_kafka import KafkaError
 
@@ -84,6 +85,7 @@ class StreamThread:
         self.kafka_supplier = _kafka_supplier
 
         self.tasks = []
+        self.tasks_by_partition = {}
         self.state = self.State.NOT_RUNNING
 
         self.topics = _topology.topics
@@ -169,7 +171,7 @@ class StreamThread:
 
     def add_records_to_tasks(self, records):
         for record in records:
-            self.tasks[record.partition()].add_records([record])
+            self.tasks_by_partition[record.partition()].add_records([record])
 
     def process_and_punctuate(self):
         while True:
@@ -208,6 +210,10 @@ class StreamThread:
                       for (task_id, partitions)
                       in grouped_tasks.items()]
 
+        for task in self.tasks:
+            self.tasks_by_partition.update(
+                zip_longest((topic_partition.partition for topic_partition in task.partitions), [], fillvalue=task))
+
     def on_assign(self, consumer, partitions):
         self.log.debug('Assigning partitions %s', partitions)
 
@@ -220,6 +226,7 @@ class StreamThread:
         self.commit_all()
         self.set_state_when_not_in_pending_shutdown(self.State.PARTITIONS_REVOKED)
         self.tasks = []
+        self.tasks_by_partition = {}
 
     def close(self):
         self.log.debug('Closing stream thread and consumer')

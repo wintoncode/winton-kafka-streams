@@ -13,7 +13,7 @@ with open('README.md') as readme_file:
 
 requirements = [
     'javaproperties',
-    'confluent-kafka',
+    'confluent-kafka>=0.11.4',
     'requests',
     'avro-python3'
 ]

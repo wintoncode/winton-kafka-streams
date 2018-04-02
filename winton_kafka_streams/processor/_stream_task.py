@@ -159,7 +159,7 @@ class StreamTask:
         try:
             if self.commitOffsetNeeded:
                 offsets_to_commit = [TopicPartition(t, p, o + 1) for ((t, p), o) in self.consumedOffsets.items()]
-                self.consumer.commit(offsets=offsets_to_commit, async=False)
+                self.consumer.commit(offsets=offsets_to_commit, asynchronous=False)
                 self.consumedOffsets.clear()
                 self.commitOffsetNeeded = False
 

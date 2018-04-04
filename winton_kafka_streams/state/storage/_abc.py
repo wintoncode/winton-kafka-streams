@@ -7,7 +7,7 @@ import abc
 import collections.abc
 
 
-class StoreBase(collections.abc.Iterator):
+class StateStoreKeyValueStore(collections.abc.MutableMapping):
     """
     Interface that must be implemented by all state classes
 

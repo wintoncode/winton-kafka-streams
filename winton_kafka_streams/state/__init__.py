@@ -2,7 +2,8 @@
 import state will import all possible pre-defined state classes
 
 """
+from winton_kafka_streams.state.factory.store_factory import StoreFactory
 
-from .simple import SimpleStore
-from .in_memory_key_value_store import InMemoryKeyValueStore
-from .change_logging_key_value_store import ChangeLoggingKeyValueStore
+
+def create(name):
+    return StoreFactory(name)

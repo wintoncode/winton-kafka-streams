@@ -1,4 +1,13 @@
-class InMemoryKeyValueStore:
+from collections.abc import MutableMapping
+
+
+class InMemoryKeyValueStore(MutableMapping):
+    def __iter__(self):
+        return self.dict.__iter__()
+
+    def __len__(self):
+        return len(self.dict)
+
     def __init__(self, name):
         self.name = name
         self.dict = {}

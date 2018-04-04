@@ -51,8 +51,8 @@ class Topology:
 
         self.state_stores = {}
         for state_builder in state_stores:
-            (self.state_stores[state_builder.name()], processors) = state_builder()
-            for p in processors:
+            (self.state_stores[state_builder.name()], procs) = state_builder()
+            for p in procs:
                 self.nodes[p].state_stores.add(state_builder.name())
 
     def _add_node(self, name, processor, inputs=[]):
@@ -65,8 +65,8 @@ class Topology:
         if any(n.name == name for n in node_inputs):
             raise KafkaStreamsError("A processor cannot have itself as an input")
         if any(n.name not in self.nodes for n in node_inputs):
-            raise KafkaStreamsError("Input(s) {} to processor {} do not yet exist" \
-                .format((set(inputs) - set(n.name for i in node_inputs)), name))
+            raise KafkaStreamsError("Input(s) {} to processor {} do not yet exist".format(
+                (set(inputs) - set(n.name for n in node_inputs)), name))
 
         for i in inputs:
             self.nodes[i].children.append(processor)
@@ -120,7 +120,7 @@ class TopologyBuilder:
             raise KafkaStreamsError("Store cannot be None")
 
         if any(store_name == s.name() for s in self._state_stores):
-            raise KafkaStreamsError(f"Store with name {store.name} already exists")
+            raise KafkaStreamsError(f"Store with name {store_name} already exists")
 
         def build_store():
             log.debug(f'TopologyBuilder is building state store {store_name}')

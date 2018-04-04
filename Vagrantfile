@@ -6,6 +6,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.network "forwarded_port", guest: 2181, host: 2181
   config.vm.network "forwarded_port", guest: 9092, host: 9092
+  config.vm.network "forwarded_port", guest: 5678, host: 5678
+  config.vm.network "forwarded_port", guest: 3000, host: 3000
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 2048
@@ -14,7 +16,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     export SCALA_VER=2.11
-    export KAFKA_VER=0.11.0.1
+    export KAFKA_VER=1.0.0
     export KAFKA_PACKAGE=kafka_${SCALA_VER}-${KAFKA_VER}
 
     apt-get update

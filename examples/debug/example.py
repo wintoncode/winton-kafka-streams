@@ -9,11 +9,12 @@ import logging
 import time
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.state.simple import SimpleStore
+from winton_kafka_streams.state.logging.simple import SimpleStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
 
 log = logging.getLogger(__name__)
+
 
 class DoubleProcessor(BaseProcessor):
     """

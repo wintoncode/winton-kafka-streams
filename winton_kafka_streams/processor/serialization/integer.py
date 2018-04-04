@@ -7,7 +7,7 @@ class IntegerSerializer(Serializer):
     def __init__(self):
         self.byte_order = 'little'
         self.signed = True
-        self.int_size = 8
+        self.int_size = 4
 
     def serialize(self, topic, data):
         return int(data).to_bytes(length=self.int_size, byteorder=self.byte_order, signed=self.signed)
@@ -15,7 +15,6 @@ class IntegerSerializer(Serializer):
     def configure(self, configs, is_key):
         self.byte_order = extract_config_property(configs, is_key, 'SERIALIZER_BYTEORDER')
         self.signed = extract_config_property(configs, is_key, 'SERIALIZER_SIGNED').lower() == 'true'
-        self.int_size = extract_config_property(configs, is_key, 'SERIALIZER_INT_SIZE')
 
     def close(self):
         pass

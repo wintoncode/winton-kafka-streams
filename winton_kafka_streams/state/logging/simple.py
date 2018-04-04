@@ -7,7 +7,7 @@ Not intended for anything other than development and debugging.
 
 import queue
 
-from ._abc import StoreBase
+from winton_kafka_streams.state.storage._abc import StoreBase
 
 
 class SimpleStore(StoreBase):

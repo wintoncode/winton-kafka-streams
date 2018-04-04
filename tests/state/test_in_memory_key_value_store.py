@@ -1,5 +1,5 @@
 import pytest
-from winton_kafka_streams.state.in_memory_key_value_store import InMemoryKeyValueStore
+from winton_kafka_streams.state.storage.in_memory_key_value_store import InMemoryKeyValueStore
 
 
 def test_inMemoryKeyValueStore():

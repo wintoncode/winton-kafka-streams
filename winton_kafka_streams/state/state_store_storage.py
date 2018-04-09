@@ -7,7 +7,7 @@ import abc
 import collections.abc
 
 
-class StateStoreKeyValueStore(collections.abc.MutableMapping):
+class StateStoreStorage(collections.abc.MutableMapping):
     """
     Interface that must be implemented by all state classes
 

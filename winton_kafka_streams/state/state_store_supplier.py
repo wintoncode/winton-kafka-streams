@@ -5,8 +5,10 @@ Abstract class for implementations of state store supplier classes
 
 from abc import ABC, abstractmethod
 
+from winton_kafka_streams.state.state_store import StateStore
 
-class BaseStateStoreSupplier(ABC):
+
+class StateStoreSupplier(ABC):
     """
     Interface that must be implemented by all state store suppliers
 
@@ -19,5 +21,5 @@ class BaseStateStoreSupplier(ABC):
         self.name = name
 
     @abstractmethod
-    def get(self):
+    def get(self) -> StateStore:
         pass

@@ -3,7 +3,6 @@ dist: trusty # librdkafka support begins at Trusty.
 python:
   - "3.6" # Advertised support
   - "3.6-dev" # Check we'll keep working in future
-  - "nightly"
 before_install:
   - wget -qO - http://packages.confluent.io/deb/3.2/archive.key | sudo apt-key add - # Use the confluent repository
   - sudo add-apt-repository "deb [arch=amd64] http://packages.confluent.io/deb/3.2 stable main"

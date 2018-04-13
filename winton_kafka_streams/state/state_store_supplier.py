@@ -1,16 +1,11 @@
-"""
-Abstract class for implementations of state store supplier classes
-
-"""
-
 from abc import ABC, abstractmethod
 
-from winton_kafka_streams.state.state_store import StateStore
+from .state_store import StateStore
 
 
 class StateStoreSupplier(ABC):
     """
-    Interface that must be implemented by all state store suppliers
+    StateStoreSuppliers are added to a topology and are accessible from each StreamThread
 
     """
 
@@ -22,4 +17,5 @@ class StateStoreSupplier(ABC):
 
     @abstractmethod
     def get(self) -> StateStore:
+        """Create a StateStore for each StreamTask. *These StateStores may exist in different threads.*"""
         pass

@@ -8,6 +8,9 @@ VT = TypeVar('VT')  # Value type.
 
 
 class KeyValueStateStore(MutableMapping[KT, VT]):
+    """
+    Dict-like class is injected into a processors to provide an interface to the underlying StateStore
+    """
     @abstractmethod
     def __setitem__(self, k: KT, v: VT) -> None:
         pass
@@ -26,8 +29,4 @@ class KeyValueStateStore(MutableMapping[KT, VT]):
 
     @abstractmethod
     def __iter__(self) -> Iterator[KT]:
-        pass
-
-    @abstractmethod
-    def get(self, k: KT, default: VT):
         pass

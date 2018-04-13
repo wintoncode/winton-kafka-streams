@@ -9,7 +9,6 @@ import logging
 import time
 
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.state.logging.simple import SimpleStore
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
 
@@ -38,8 +37,7 @@ def _debug_run(config_file):
         topology_builder. \
             source('input-value', ['wks-debug-example-topic-two']). \
             processor('double', DoubleProcessor, 'input-value'). \
-            sink('output-double', 'wks-debug-example-output', 'double'). \
-            state_store('double-store', SimpleStore, 'double')
+            sink('output-double', 'wks-debug-example-output', 'double')
 
     wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)
     wks.start()

@@ -7,5 +7,4 @@ class StoreChangeLogger:
 
     def log_change(self, key, value):
         if self.record_collector:
-            self.record_collector.send(self.topic, key, value,
-                    self.context.timestamp, partition=self.partition)
+            self.record_collector.send(self.topic, key, value, self.context.timestamp, partition=self.partition)

@@ -1,42 +1,46 @@
 from typing import Iterator, TypeVar
 
-from winton_kafka_streams.state.key_value_state_store import KeyValueStateStore
-from winton_kafka_streams.state.state_store import StateStore
+from ..key_value_state_store import KeyValueStateStore
+from ..state_store import StateStore
+from ..state_store_supplier import StateStoreSupplier
 
 KT = TypeVar('KT')  # Key type.
 VT = TypeVar('VT')  # Value type.
 
 
 class InMemoryStateStore(StateStore):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, key_serde, value_serde, logging_enabled):
+        super().__init__(name, key_serde, value_serde, logging_enabled)
         self.dict = {}
 
     def initialize(self, context, root):
-        # TODO: register with context, passing restore callback
         pass
 
     def get_key_value_store(self) -> KeyValueStateStore[KT, VT]:
+        parent = self
+
         class InMemoryKeyValueStateStore(KeyValueStateStore[KT, VT]):
-            def get(self, k: KT, default: VT = None):
-                return self.parent.dict.get(k, default)
-
-            def __init__(self, parent):
-                self.parent = parent
-
             def __setitem__(self, k: KT, v: VT) -> None:
-                self.parent.dict[k] = v
+                parent.dict[k] = v
 
             def __delitem__(self, v: KT) -> None:
-                del self.parent.dict[v]
+                del parent.dict[v]
 
             def __getitem__(self, k: KT) -> VT:
-                return self.parent.dict[k]
+                return parent.dict[k]
 
             def __len__(self) -> int:
-                return len(self.parent.dict)
+                return len(parent.dict)
 
             def __iter__(self) -> Iterator[KT]:
-                return self.parent.dict.__iter__()
+                return parent.dict.__iter__()
 
-        return InMemoryKeyValueStateStore(self)
+        return InMemoryKeyValueStateStore()
+
+
+class InMemoryStateStoreSupplier(StateStoreSupplier):
+    def __init__(self, name, key_serde, value_serde, logging_enabled):
+        super().__init__(name, key_serde, value_serde, logging_enabled)
+
+    def get(self) -> StateStore:
+        return InMemoryStateStore(self.name, self._key_serde, self._value_serde, self.logging_enabled)

@@ -6,7 +6,7 @@ from ..long import LongDeserializer, LongSerializer
 from .wrapper_serde import WrapperSerde
 
 
-class LongSerde(WrapperSerde):
+class LongSerde(WrapperSerde[int]):
     def __init__(self):
         serializer = LongSerializer()
         deserializer = LongDeserializer()

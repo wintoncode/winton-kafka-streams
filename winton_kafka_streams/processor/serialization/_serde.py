@@ -5,6 +5,15 @@ Base class for deserializer implementations
 
 import abc
 
+from typing import TypeVar, Generic
+
+from ._deserializer import Deserializer
+from ._serializer import Serializer
+
+T = TypeVar('T')
+TSer = TypeVar('TSer')
+TDe = TypeVar('TDe')
+
 
 def extract_config_property(configs, is_key, property_name):
     overridden_property_name = ('KEY_%s' % property_name) if is_key else ('VALUE_%s' % property_name)
@@ -14,7 +23,25 @@ def extract_config_property(configs, is_key, property_name):
     return prop_value
 
 
-class Serde(metaclass=abc.ABCMeta):
+class AsymmetricSerde(Generic[TSer, TDe], metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def configure(self, configs, is_key):
+        pass
+
+    @abc.abstractmethod
+    def serializer(self) -> Serializer[TSer]:
+        pass
+
+    @abc.abstractmethod
+    def deserializer(self) -> Deserializer[TDe]:
+        pass
+
+    @abc.abstractmethod
+    def close(self):
+        pass
+
+
+class Serde(AsymmetricSerde[T, T]):
     """
     Configure this class, which will configure the underlying serializer and deserializer.
 
@@ -39,7 +66,7 @@ class Serde(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def serializer(self):
+    def serializer(self) -> Serializer[T]:
         pass
 
     """
@@ -51,7 +78,7 @@ class Serde(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def deserializer(self):
+    def deserializer(self) -> Deserializer[T]:
         pass
 
     """
@@ -62,3 +89,4 @@ class Serde(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def close(self):
         pass
+

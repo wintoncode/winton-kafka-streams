@@ -8,7 +8,7 @@ KT = TypeVar('KT')  # Key type.
 VT = TypeVar('VT')  # Value type.
 
 
-class InMemoryStateStore(StateStore):
+class InMemoryStateStore(StateStore[KT, VT]):
     def __init__(self, name, key_serde, value_serde, logging_enabled):
         super().__init__(name, key_serde, value_serde, logging_enabled)
         self.dict = {}
@@ -35,12 +35,12 @@ class InMemoryStateStore(StateStore):
             def __iter__(self) -> Iterator[KT]:
                 return parent.dict.__iter__()
 
-        return InMemoryKeyValueStateStore()
+        return InMemoryKeyValueStateStore[KT, VT]()
 
 
-class InMemoryStateStoreSupplier(StateStoreSupplier):
+class InMemoryStateStoreSupplier(StateStoreSupplier[KT, VT]):
     def __init__(self, name, key_serde, value_serde, logging_enabled):
         super().__init__(name, key_serde, value_serde, logging_enabled)
 
-    def get(self) -> StateStore:
-        return InMemoryStateStore(self.name, self._key_serde, self._value_serde, self.logging_enabled)
+    def get(self) -> StateStore[KT, VT]:
+        return InMemoryStateStore[KT, VT](self.name, self._key_serde, self._value_serde, self.logging_enabled)

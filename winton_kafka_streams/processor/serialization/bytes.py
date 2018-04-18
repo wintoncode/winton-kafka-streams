@@ -2,8 +2,8 @@ from ._deserializer import Deserializer
 from ._serializer import Serializer
 
 
-class BytesSerializer(Serializer):
-    def serialize(self, topic, data):
+class BytesSerializer(Serializer[bytes]):
+    def serialize(self, topic: str, data: bytes) -> bytes:
         return data
 
     def configure(self, configs, is_key):
@@ -13,8 +13,8 @@ class BytesSerializer(Serializer):
         pass
 
 
-class BytesDeserializer(Deserializer):
-    def deserialize(self, topic, data):
+class BytesDeserializer(Deserializer[bytes]):
+    def deserialize(self, topic: str, data: bytes) -> bytes:
         return data
 
     def configure(self, configs, is_key):

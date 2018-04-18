@@ -1,11 +1,10 @@
-from ._serde import extract_config_property
 from ._deserializer import Deserializer
 from ._serializer import Serializer
 import struct
 
 
-class FloatSerializer(Serializer):
-    def serialize(self, topic, data):
+class FloatSerializer(Serializer[float]):
+    def serialize(self, topic: str, data: float) -> bytes:
         return struct.pack('f', data)
 
     def configure(self, configs, is_key):
@@ -15,8 +14,8 @@ class FloatSerializer(Serializer):
         pass
 
 
-class FloatDeserializer(Deserializer):
-    def deserialize(self, topic, data):
+class FloatDeserializer(Deserializer[float]):
+    def deserialize(self, topic: str, data: bytes) -> float:
         return struct.unpack('f', data)[0]
 
     def configure(self, configs, is_key):

@@ -15,6 +15,12 @@ def test_string_serde():
 
 def test_integer_serde():
     int_serde = IntegerSerde()
+    assert int_serde.serializer.serialize('topic', -2132) == b'\xac\xf7\xff\xff'
+    assert int_serde.deserializer.deserialize('topic', b'\xac\xf7\xff\xff') == -2132
+
+
+def test_long_serde():
+    int_serde = LongSerde()
     assert int_serde.serializer.serialize('topic', -2132) == b'\xac\xf7\xff\xff\xff\xff\xff\xff'
     assert int_serde.deserializer.deserialize('topic', b'\xac\xf7\xff\xff\xff\xff\xff\xff') == -2132
 

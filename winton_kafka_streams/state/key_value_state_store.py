@@ -1,6 +1,6 @@
-from typing import TypeVar, Iterator
+from typing import TypeVar, Iterator, MutableMapping
 
-from collections.abc import MutableMapping
+
 from abc import abstractmethod
 
 KT = TypeVar('KT')  # Key type.

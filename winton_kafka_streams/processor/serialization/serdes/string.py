@@ -7,7 +7,7 @@ from ..bytes import BytesSerializer, BytesDeserializer
 from .wrapper_serde import WrapperSerde
 
 
-class StringSerde(WrapperSerde):
+class StringSerde(WrapperSerde[str]):
     def __init__(self):
         serializer = StringSerializer()
         deserializer = StringDeserializer()

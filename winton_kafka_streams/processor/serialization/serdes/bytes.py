@@ -6,7 +6,7 @@ from ..bytes import BytesSerializer, BytesDeserializer
 from .wrapper_serde import WrapperSerde
 
 
-class BytesSerde(WrapperSerde):
+class BytesSerde(WrapperSerde[bytes]):
     """
     Bytes Serde that makes no changes to values
     during serialization or deserialization

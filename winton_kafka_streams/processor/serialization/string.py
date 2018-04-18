@@ -1,14 +1,14 @@
-from winton_kafka_streams.processor.serialization._serde import extract_config_property
+from ._serde import extract_config_property
 from ._deserializer import Deserializer
 from ._serializer import Serializer
 
 
-class StringSerializer(Serializer):
+class StringSerializer(Serializer[str]):
     def __init__(self):
         self.encoding = 'utf-8'
         self.on_error = 'strict'
 
-    def serialize(self, topic, data):
+    def serialize(self, topic: str, data: str) -> bytes:
         return str(data).encode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
@@ -19,12 +19,12 @@ class StringSerializer(Serializer):
         pass
 
 
-class StringDeserializer(Deserializer):
+class StringDeserializer(Deserializer[str]):
     def __init__(self):
         self.encoding = 'utf-8'
         self.on_error = 'strict'
 
-    def deserialize(self, topic, data):
+    def deserialize(self, topic: str, data: bytes) -> str:
         return data.decode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):

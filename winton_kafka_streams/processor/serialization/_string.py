@@ -1,4 +1,4 @@
-from ._serde import extract_config_property
+from .serde import extract_config_property
 from ._deserializer import Deserializer
 from ._serializer import Serializer
 
@@ -12,8 +12,8 @@ class StringSerializer(Serializer[str]):
         return str(data).encode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
-        self.encoding = extract_config_property(configs, is_key, 'SERIALIZER_ENCODING')
-        self.on_error = extract_config_property(configs, is_key, 'SERIALIZER_ERROR')
+        self.encoding = extract_config_property(configs, is_key, 'SERIALIZER_ENCODING', self.encoding)
+        self.on_error = extract_config_property(configs, is_key, 'SERIALIZER_ERROR', self.on_error)
 
     def close(self):
         pass
@@ -28,8 +28,8 @@ class StringDeserializer(Deserializer[str]):
         return data.decode(self.encoding, self.on_error)
 
     def configure(self, configs, is_key):
-        self.encoding = extract_config_property(configs, is_key, 'DESERIALIZER_ENCODING')
-        self.on_error = extract_config_property(configs, is_key, 'DESERIALIZER_ERROR')
+        self.encoding = extract_config_property(configs, is_key, 'DESERIALIZER_ENCODING', self.encoding)
+        self.on_error = extract_config_property(configs, is_key, 'DESERIALIZER_ERROR', self.on_error)
 
     def close(self):
         pass

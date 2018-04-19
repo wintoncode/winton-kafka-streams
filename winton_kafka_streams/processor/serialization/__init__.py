@@ -1,1 +1,1 @@
-from ._serde import Serde
+from .serde import Serde

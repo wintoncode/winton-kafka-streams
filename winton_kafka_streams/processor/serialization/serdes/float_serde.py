@@ -2,7 +2,7 @@
 Float Serde
 
 """
-from ..float import FloatDeserializer, FloatSerializer
+from .._float import FloatDeserializer, FloatSerializer
 from .wrapper_serde import WrapperSerde
 
 

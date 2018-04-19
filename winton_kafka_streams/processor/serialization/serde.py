@@ -15,11 +15,11 @@ TSer = TypeVar('TSer')
 TDe = TypeVar('TDe')
 
 
-def extract_config_property(configs, is_key, property_name):
+def extract_config_property(configs, is_key, property_name, default_value = None):
     overridden_property_name = ('KEY_%s' % property_name) if is_key else ('VALUE_%s' % property_name)
     prop_value = getattr(configs, overridden_property_name, None)
     if prop_value is None:
-        prop_value = getattr(configs, property_name)
+        prop_value = getattr(configs, property_name, default_value)
     return prop_value
 
 

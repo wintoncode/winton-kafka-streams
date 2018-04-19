@@ -13,5 +13,5 @@ class InMemoryStateStoreSupplier(StateStoreSupplier):
     def __init__(self,  name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool):
         super().__init__(name, key_serde, value_serde, logging_enabled)
 
-    def get(self) -> StateStore:
-        return InMemoryStateStore(self.name(), self._key_serde, self._value_serde, self.logging_enabled)
+    def _build_state_store(self) -> StateStore:
+        return InMemoryStateStore(self.name, self._key_serde, self._value_serde, self.logging_enabled)

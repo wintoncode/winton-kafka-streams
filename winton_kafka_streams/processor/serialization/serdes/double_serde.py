@@ -2,7 +2,7 @@
 Float Serde
 
 """
-from ..double import DoubleDeserializer, DoubleSerializer
+from .._double import DoubleDeserializer, DoubleSerializer
 from .wrapper_serde import WrapperSerde
 
 

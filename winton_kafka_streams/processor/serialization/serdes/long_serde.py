@@ -2,7 +2,7 @@
 Long Serde
 
 """
-from ..long import LongDeserializer, LongSerializer
+from .._long import LongDeserializer, LongSerializer
 from .wrapper_serde import WrapperSerde
 
 

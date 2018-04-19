@@ -51,9 +51,9 @@ class Topology:
 
         self.state_stores = {}
         for store_supplier, store_processors in store_suppliers.items():
-            self.state_stores[store_supplier.name()] = store_supplier
+            self.state_stores[store_supplier.name] = store_supplier
             for p in store_processors:
-                self.nodes[p].state_stores.add(store_supplier.name())
+                self.nodes[p].state_stores.add(store_supplier.name)
 
     def _add_node(self, name, processor, inputs):
         if name in self.nodes:
@@ -118,7 +118,7 @@ class TopologyBuilder:
         if store_supplier is None:
             raise KafkaStreamsError("store_supplier cannot be None")
 
-        if any(store_supplier.name == s.name() for s in self._store_suppliers):
+        if any(store_supplier.name == s.name for s in self._store_suppliers):
             raise KafkaStreamsError(f"Store with name {store_supplier.name} already exists")
 
         self._store_suppliers[store_supplier] = processors

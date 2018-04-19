@@ -6,7 +6,7 @@ from typing import TypeVar
 
 from .._deserializer import Deserializer
 from .._serializer import Serializer
-from .._serde import AsymmetricSerde, Serde
+from ..serde import AsymmetricSerde, Serde
 
 TSer = TypeVar('TSer')
 TDe = TypeVar('TDe')

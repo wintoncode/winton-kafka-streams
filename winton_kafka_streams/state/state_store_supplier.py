@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from typing import TypeVar, Generic
 
+from winton_kafka_streams.state.logging.change_logging_state_store import ChangeLoggingStateStore
 from .state_store import StateStore
 from ..processor.serialization import Serde
 
@@ -26,6 +27,13 @@ class StateStoreSupplier(ABC, Generic[KT, VT]):
         return self._name
 
     @abstractmethod
+    def _build_state_store(self) -> StateStore[KT, VT]:
+        pass
+
     def get(self) -> StateStore[KT, VT]:
         """Create a StateStore for each StreamTask. *These StateStores may exist in different threads.*"""
-        pass
+        inner = self._build_state_store()
+        if self.logging_enabled:
+            return ChangeLoggingStateStore(self.name, self._key_serde, self._value_serde, self.logging_enabled, inner)
+        else:
+            return inner

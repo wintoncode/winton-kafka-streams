@@ -1,7 +1,7 @@
 from confluent_kafka.avro import CachedSchemaRegistryClient, MessageSerializer
 from confluent_kafka.avro import loads as avro_loads
 
-from ._serde import extract_config_property
+from .serde import extract_config_property
 from ._deserializer import Deserializer
 from ._serializer import Serializer
 

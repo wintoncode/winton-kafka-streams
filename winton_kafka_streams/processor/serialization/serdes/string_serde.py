@@ -2,8 +2,7 @@
 String Serde
 
 """
-from ..string import StringSerializer, StringDeserializer
-from ..bytes import BytesSerializer, BytesDeserializer
+from .._string import StringSerializer, StringDeserializer
 from .wrapper_serde import WrapperSerde
 
 

@@ -2,7 +2,7 @@
 Bytes Serde (default)
 
 """
-from ..bytes import BytesSerializer, BytesDeserializer
+from .._bytes import BytesSerializer, BytesDeserializer
 from .wrapper_serde import WrapperSerde
 
 

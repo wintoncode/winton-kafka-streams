@@ -1,4 +1,4 @@
-from .integer import IntegerSerializer, IntegerDeserializer
+from ._integer import IntegerSerializer, IntegerDeserializer
 
 
 class LongSerializer(IntegerSerializer):

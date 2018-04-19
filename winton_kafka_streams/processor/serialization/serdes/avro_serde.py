@@ -2,7 +2,7 @@
 Avro Serde
 
 """
-from ..avro import AvroSerializer, AvroDeserializer
+from .._avro import AvroSerializer, AvroDeserializer
 from .wrapper_serde import WrapperSerde
 
 

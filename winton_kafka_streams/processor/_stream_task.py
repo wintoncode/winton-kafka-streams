@@ -57,7 +57,7 @@ class StreamTask:
         self.application_id = _application_id
         self.partitions = _partitions
         self.topology = _topology_builder.build()
-        self.state_stores = {name: store.get() for name, store in self.topology.state_stores}
+        self.state_stores = {name: store.get() for name, store in self.topology.state_stores.items()}
         self.consumer = _consumer
         self.producer = _producer
         self.config = _config

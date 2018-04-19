@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
 
+from ..processor.serialization import Serde
 from .key_value_state_store import KeyValueStateStore
 
 KT = TypeVar('KT')  # Key type.
@@ -11,11 +12,15 @@ class StateStore(ABC, Generic[KT, VT]):
     """
     StateStores are created by Suppliers for use in StreamTasks
     """
-    def __init__(self, name, key_serde, value_serde, logging_enabled):
-        self.logging_enabled = logging_enabled
-        self._value_serde = value_serde
-        self._key_serde = key_serde
-        self.name = name
+    def __init__(self, name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool):
+        self.logging_enabled: bool = logging_enabled
+        self._value_serde: Serde[VT] = value_serde
+        self._key_serde: Serde[KT] = key_serde
+        self._name: str = name
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @abstractmethod
     def initialize(self, context, root):

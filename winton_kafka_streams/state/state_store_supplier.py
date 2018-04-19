@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from typing import TypeVar, Generic, Callable
+from typing import TypeVar, Generic
 
 from .state_store import StateStore
 from ..processor.serialization import Serde
@@ -15,11 +15,15 @@ class StateStoreSupplier(ABC, Generic[KT, VT]):
 
     """
 
-    def __init__(self, name: str, key_serde: Serde[KT], value_serde, logging_enabled):
-        self.logging_enabled = logging_enabled
-        self._value_serde = value_serde
-        self._key_serde = key_serde
-        self.name = name
+    def __init__(self, name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool):
+        self.logging_enabled: bool = logging_enabled
+        self._value_serde: Serde[VT] = value_serde
+        self._key_serde: Serde[KT] = key_serde
+        self._name: str = name
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @abstractmethod
     def get(self) -> StateStore[KT, VT]:

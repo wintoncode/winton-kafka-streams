@@ -79,4 +79,4 @@ class Context:
         if name not in self._state_stores:
             raise KafkaStreamsError(f"Store {name} is not found")
 
-        return self._state_stores[name]
+        return self._state_stores[name].get_key_value_store()

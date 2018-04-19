@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+from winton_kafka_streams.processor.serialization import Serde
 from ..key_value_state_store import KeyValueStateStore
 from ..logging.change_logging_key_value_store import ChangeLoggingKeyValueStore
 from ..state_store import StateStore
@@ -10,8 +11,9 @@ VT = TypeVar('VT')  # Value type.
 
 
 class ChangeLoggingStateStore(StateStore[KT, VT]):
-    def __init__(self, name, inner_state_store: StateStore[KT, VT]):
-        super().__init__(name)
+    def __init__(self,  name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool,
+                 inner_state_store: StateStore[KT, VT]):
+        super().__init__(name, key_serde, value_serde, logging_enabled)
         self.inner_state_store = inner_state_store
         self.change_logger = None
 

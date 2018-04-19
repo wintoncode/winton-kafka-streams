@@ -5,6 +5,6 @@ class StoreChangeLogger:
         self.partition = context.task_id.partition
         self.record_collector = context.recordCollector
 
-    def log_change(self, key, value):
+    def log_change(self, key: bytes, value: bytes):
         if self.record_collector:
             self.record_collector.send(self.topic, key, value, self.context.timestamp, partition=self.partition)

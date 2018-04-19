@@ -36,7 +36,7 @@ class Topology:
     A realised instance of a topology
 
     """
-    def __init__(self, sources, processors, sinks, state_stores):
+    def __init__(self, sources, processors, sinks, store_suppliers):
         self.nodes = {}
         self.sources = {}
         sources_list = [source_builder(self) for source_builder in sources]
@@ -50,12 +50,12 @@ class Topology:
         self.sinks = [sink_builder(self) for sink_builder in sinks]
 
         self.state_stores = {}
-        for state_builder in state_stores:
-            (self.state_stores[state_builder.name()], procs) = state_builder()
-            for p in procs:
-                self.nodes[p].state_stores.add(state_builder.name())
+        for store_supplier, store_processors in store_suppliers.items():
+            self.state_stores[store_supplier.name()] = store_supplier
+            for p in store_processors:
+                self.nodes[p].state_stores.add(store_supplier.name())
 
-    def _add_node(self, name, processor, inputs=[]):
+    def _add_node(self, name, processor, inputs):
         if name in self.nodes:
             raise KafkaStreamsError(f"A processor with the name '{name}' already added to this topology")
         self.nodes[name] = processor
@@ -80,7 +80,7 @@ class TopologyBuilder:
         self._sources = []
         self._processors = []
         self._sinks = []
-        self._state_stores = []
+        self._store_suppliers = {}
         self.topics = []
 
     def __enter__(self):
@@ -99,38 +99,29 @@ class TopologyBuilder:
 
     @property
     def state_stores(self):
-        return self._state_stores
+        return self._store_suppliers
 
-    def state_store(self, store_name, store_type, *processors):
+    def state_store(self, store_supplier, *processors):
         """
         Add a store and connect to processors
 
         Parameters:
         -----------
-        store : winton_kafka_streams.processor.store.AbstractStore
-            State store factory
+        store_supplier : winton_kafka_streams.state.StateStoreSupplier
         *processors : processor names to which store should be attached
 
         Raises:
         KafkaStreamsError
-            * If store is None
-            * If store already exists
+            * If store_supplier is None
+            * If store_supplier already exists
         """
-        if store_type is None:
-            raise KafkaStreamsError("Store cannot be None")
+        if store_supplier is None:
+            raise KafkaStreamsError("store_supplier cannot be None")
 
-        if any(store_name == s.name() for s in self._state_stores):
-            raise KafkaStreamsError(f"Store with name {store_name} already exists")
+        if any(store_supplier.name == s.name() for s in self._store_suppliers):
+            raise KafkaStreamsError(f"Store with name {store_supplier.name} already exists")
 
-        def build_store():
-            log.debug(f'TopologyBuilder is building state store {store_name}')
-            return store_type(store_name), processors
-
-        def _name():
-            return store_name
-        build_store.name = _name
-
-        self._state_stores.append(build_store)
+        self._store_suppliers[store_supplier] = processors
         return self
 
     def source(self, name, topics):
@@ -206,4 +197,4 @@ class TopologyBuilder:
         return self
 
     def build(self):
-        return Topology(self._sources, self._processors, self._sinks, self._state_stores)
+        return Topology(self._sources, self._processors, self._sinks, self._store_suppliers)

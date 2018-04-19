@@ -57,6 +57,7 @@ class StreamTask:
         self.application_id = _application_id
         self.partitions = _partitions
         self.topology = _topology_builder.build()
+        self.state_stores = {name: store.get() for name, store in self.topology.state_stores}
         self.consumer = _consumer
         self.producer = _producer
         self.config = _config
@@ -70,7 +71,7 @@ class StreamTask:
 
         self.queue = queue.Queue()
         self.context = ProcessorContext(self.task_id, self,
-                self.recordCollector, self.topology.state_stores)
+                self.recordCollector, self.state_stores)
 
         self.punctuation_queue = PunctuationQueue(self.punctuate)
         # TODO: use the configured timestamp extractor.
@@ -86,8 +87,8 @@ class StreamTask:
 
     def _init_state_stores(self):
         self.log.debug(f'Initialising state stores')
-        for store in self.topology.state_stores.values():
-            store.initialise(self.context, store)
+        for store in self.state_stores.values():
+            store.initialize(self.context, store)
 
     def _init_topology(self, context):
         for node in self.topology.nodes.values():

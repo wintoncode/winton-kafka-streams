@@ -1,5 +1,6 @@
 from typing import Iterator, TypeVar
 
+from winton_kafka_streams.processor.serialization import Serde
 from ..key_value_state_store import KeyValueStateStore
 from ..state_store import StateStore
 from ..state_store_supplier import StateStoreSupplier
@@ -9,7 +10,7 @@ VT = TypeVar('VT')  # Value type.
 
 
 class InMemoryStateStore(StateStore[KT, VT]):
-    def __init__(self, name, key_serde, value_serde, logging_enabled):
+    def __init__(self,  name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool):
         super().__init__(name, key_serde, value_serde, logging_enabled)
         self.dict = {}
 
@@ -39,8 +40,8 @@ class InMemoryStateStore(StateStore[KT, VT]):
 
 
 class InMemoryStateStoreSupplier(StateStoreSupplier[KT, VT]):
-    def __init__(self, name, key_serde, value_serde, logging_enabled):
+    def __init__(self,  name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool):
         super().__init__(name, key_serde, value_serde, logging_enabled)
 
     def get(self) -> StateStore[KT, VT]:
-        return InMemoryStateStore[KT, VT](self.name, self._key_serde, self._value_serde, self.logging_enabled)
+        return InMemoryStateStore[KT, VT](self.name(), self._key_serde, self._value_serde, self.logging_enabled)

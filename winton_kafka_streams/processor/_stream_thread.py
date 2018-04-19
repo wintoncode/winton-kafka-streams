@@ -78,9 +78,9 @@ class StreamThread:
         def __str__(self):
             return self.name
 
-    def __init__(self, _topology, _config, _kafka_supplier):
+    def __init__(self, _topology_builder, _config, _kafka_supplier):
         super().__init__()
-        self.topology = _topology
+        self.topology_builder = _topology_builder
         self.config = _config
         self.kafka_supplier = _kafka_supplier
 
@@ -88,7 +88,7 @@ class StreamThread:
         self.tasks_by_partition = {}
         self.state = self.State.NOT_RUNNING
 
-        self.topics = _topology.topics
+        self.topics = _topology_builder.topics
 
         self.thread = threading.Thread(target=self.run)
         self.log = logging.getLogger(__name__ + '(' + self.thread.name + ')')
@@ -205,7 +205,7 @@ class StreamThread:
         grouped_tasks = {TaskId(topic_partition.topic, topic_partition.partition): {topic_partition}
                          for topic_partition in assignment}
         self.tasks = [StreamTask(task_id, self.config.APPLICATION_ID,
-                                 partitions, self.topology, self.consumer,
+                                 partitions, self.topology_builder, self.consumer,
                                  self.kafka_supplier.producer(), self.config)
                       for (task_id, partitions)
                       in grouped_tasks.items()]

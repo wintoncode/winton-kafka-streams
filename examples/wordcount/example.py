@@ -16,6 +16,7 @@ import winton_kafka_streams.state as state_stores
 
 log = logging.getLogger(__name__)
 
+
 # An example implementation of word count,
 # showing where punctuate can be useful
 class WordCount(BaseProcessor):
@@ -54,6 +55,7 @@ def run(config_file, binary_output):
         with_integer_values(). \
         in_memory(). \
         build()
+
     with TopologyBuilder() as topology_builder:
         topology_builder. \
             source('input-value', ['wks-wordcount-example-topic']). \

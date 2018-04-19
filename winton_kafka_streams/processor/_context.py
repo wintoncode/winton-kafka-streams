@@ -6,6 +6,7 @@ Processor context is the link to kafka from individual processor objects
 import functools
 import logging
 
+from winton_kafka_streams.state.key_value_state_store import KeyValueStateStore
 from ..errors.kafka_streams_error import KafkaStreamsError
 
 log = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ class Context:
     def topic(self):
         return self.currentRecord.topic()
 
-    def get_store(self, name):
+    def get_store(self, name) -> KeyValueStateStore:
         if not self.currentNode:
             raise KafkaStreamsError("Access of state from unknown node")
 

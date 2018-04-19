@@ -11,6 +11,7 @@ import time
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
+import winton_kafka_streams.state as state_stores
 
 log = logging.getLogger(__name__)
 
@@ -21,22 +22,38 @@ class DoubleProcessor(BaseProcessor):
 
     """
 
+    def initialise(self, name, context):
+        super().initialise(name, context)
+        self.state = context.get_store('double_store')
+
     def process(self, key, value):
         log.debug(f'DoubleProcessor::process({key}, {str(value)})')
         doubled = value*2
-        log.debug(f'Forwarding to sink ({key}, {str(doubled)})')
-        self.context.forward(key, doubled)
+        self.state[key] = doubled
+        if len(self.state) >= 4:
+            self.punctuate()
 
-    # TODO -- finish off the spec from the README, need to keep state
+    def punctuate(self):
+        for key, value in self.state.items():
+            log.debug(f'Forwarding to sink ({key}, {str(value)})')
+            self.context.forward(key, value)
+        self.state.clear()
 
 
 def _debug_run(config_file):
     kafka_config.read_local_config(config_file)
 
+    double_store = state_stores.create('double_store'). \
+        with_string_keys(). \
+        with_integer_values(). \
+        in_memory(). \
+        build()
+
     with TopologyBuilder() as topology_builder:
         topology_builder. \
             source('input-value', ['wks-debug-example-topic-two']). \
             processor('double', DoubleProcessor, 'input-value'). \
+            state_store(double_store, 'double'). \
             sink('output-double', 'wks-debug-example-output', 'double')
 
     wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)

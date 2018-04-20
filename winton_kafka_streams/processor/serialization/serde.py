@@ -24,16 +24,18 @@ def extract_config_property(configs, is_key, property_name, default_value = None
 
 
 class AsymmetricSerde(Generic[TSer, TDe], metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def configure(self, configs, is_key):
-        pass
-
+    @property
     @abc.abstractmethod
     def serializer(self) -> Serializer[TSer]:
         pass
 
+    @property
     @abc.abstractmethod
     def deserializer(self) -> Deserializer[TDe]:
+        pass
+
+    @abc.abstractmethod
+    def configure(self, configs, is_key):
         pass
 
     @abc.abstractmethod
@@ -42,6 +44,32 @@ class AsymmetricSerde(Generic[TSer, TDe], metaclass=abc.ABCMeta):
 
 
 class Serde(AsymmetricSerde[T, T]):
+    """
+    Get Serializer
+
+    Returns:
+    --------
+    serializer : Serializer
+    """
+
+    @property
+    @abc.abstractmethod
+    def serializer(self) -> Serializer[T]:
+        pass
+
+    """
+    Get Deserializer
+
+    Returns:
+    --------
+    deserializer : Deserializer
+    """
+
+    @property
+    @abc.abstractmethod
+    def deserializer(self) -> Deserializer[T]:
+        pass
+
     """
     Configure this class, which will configure the underlying serializer and deserializer.
 
@@ -55,30 +83,6 @@ class Serde(AsymmetricSerde[T, T]):
 
     @abc.abstractmethod
     def configure(self, configs, is_key):
-        pass
-
-    """
-    Get Serializer
-
-    Returns:
-    --------
-    serializer : Serializer
-    """
-
-    @abc.abstractmethod
-    def serializer(self) -> Serializer[T]:
-        pass
-
-    """
-    Get Deserializer
-
-    Returns:
-    --------
-    deserializer : Deserializer
-    """
-
-    @abc.abstractmethod
-    def deserializer(self) -> Deserializer[T]:
         pass
 
     """

@@ -3,7 +3,7 @@ class StoreChangeLogger:
         self.topic = f'{context.application_id}-{store_name}-changelog'
         self.context = context
         self.partition = context.task_id.partition
-        self.record_collector = context.recordCollector
+        self.record_collector = context.state_record_collector
 
     def log_change(self, key: bytes, value: bytes):
         if self.record_collector:

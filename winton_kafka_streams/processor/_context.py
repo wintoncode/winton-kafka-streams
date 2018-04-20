@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 def _raiseIfNullRecord(fn):
     @functools.wraps(fn)
     def _inner(*args, **kwargs):
-        if args[0].currentRecord is None:
+        if args[0].current_record is None:
             raise KafkaStreamsError(f"Record cannot be unset when retrieving {fn.__name__}")
         return fn(*args, **kwargs)
     return _inner
@@ -27,9 +27,10 @@ class Context:
 
     """
 
-    def __init__(self, _state_stores):
-        self.currentNode = None
-        self.currentRecord = None
+    def __init__(self, _state_record_collector, _state_stores):
+        self.current_node = None
+        self.current_record = None
+        self.state_record_collector = _state_record_collector
         self._state_stores = _state_stores
 
     def send(self, topic, key, obj):
@@ -51,32 +52,32 @@ class Context:
     @property
     @_raiseIfNullRecord
     def offset(self):
-        return self.currentRecord.offset()
+        return self.current_record.offset()
 
     @property
     @_raiseIfNullRecord
     def partition(self):
-        return self.currentRecord.partition()
+        return self.current_record.partition()
 
     @property
     @_raiseIfNullRecord
     def timestamp(self):
-        return self.currentRecord.timestamp()
+        return self.current_record.timestamp()
 
     @property
     @_raiseIfNullRecord
     def topic(self):
-        return self.currentRecord.topic()
+        return self.current_record.topic()
 
     def get_store(self, name) -> KeyValueStateStore:
-        if not self.currentNode:
+        if not self.current_node:
             raise KafkaStreamsError("Access of state from unknown node")
 
         # TODO: Need to check for a global state here
         #       This is the reason that processors access store through context
 
-        if name not in self.currentNode.state_stores:
-            raise KafkaStreamsError(f"Processor {self.currentNode.name} does not have access to store {name}")
+        if name not in self.current_node.state_stores:
+            raise KafkaStreamsError(f"Processor {self.current_node.name} does not have access to store {name}")
         if name not in self._state_stores:
             raise KafkaStreamsError(f"Store {name} is not found")
 

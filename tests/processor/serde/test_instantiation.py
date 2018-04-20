@@ -4,13 +4,13 @@ import winton_kafka_streams.processor.serialization.serdes as serdes
 def test_serde_instance_to_string():
     serde = serdes.BytesSerde()
     serde_str = serdes.serde_as_string(serde)
-    assert 'winton_kafka_streams.processor.serialization.serdes.bytes.BytesSerde' == serde_str
+    assert 'winton_kafka_streams.processor.serialization.serdes.bytes_serde.BytesSerde' == serde_str
 
 
 def test_serde_class_to_string():
     serde = serdes.BytesSerde
     serde_str = serdes.serde_as_string(serde)
-    assert 'winton_kafka_streams.processor.serialization.serdes.bytes.BytesSerde' == serde_str
+    assert 'winton_kafka_streams.processor.serialization.serdes.bytes_serde.BytesSerde' == serde_str
 
 
 def test_string_to_serde():

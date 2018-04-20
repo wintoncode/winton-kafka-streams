@@ -26,17 +26,18 @@ class DoubleProcessor(BaseProcessor):
         super().initialise(name, context)
         self.state = context.get_store('double_store')
 
-    def process(self, key, value):
-        log.debug(f'DoubleProcessor::process({key}, {str(value)})')
+    def process(self, _, value):
+        log.debug(f'DoubleProcessor::process({str(value)})')
         doubled = value*2
-        self.state[key] = doubled
-        if len(self.state) >= 4:
+        items_in_state = len(self.state)
+        self.state[items_in_state] = doubled
+        if items_in_state >= 4:
             self.punctuate()
 
     def punctuate(self):
-        for key, value in self.state.items():
-            log.debug(f'Forwarding to sink ({key}, {str(value)})')
-            self.context.forward(key, value)
+        for _, value in self.state.items():
+            log.debug(f'Forwarding to sink ({str(value)})')
+            self.context.forward(None, value)
         self.state.clear()
 
 
@@ -44,7 +45,7 @@ def _debug_run(config_file):
     kafka_config.read_local_config(config_file)
 
     double_store = state_stores.create('double_store'). \
-        with_string_keys(). \
+        with_integer_keys(). \
         with_integer_values(). \
         in_memory(). \
         build()

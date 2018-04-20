@@ -26,8 +26,8 @@ def test_sinkProcessorProcess():
         mock_task = mock.Mock()
         mock_task.application_id = 'test_id'
         mock_task_id = TaskId('test_group', 0)
-        processor_context = wks_processor.ProcessorContext(mock_task_id, mock_task, None, {})
-        processor_context.recordCollector = mock.MagicMock()
+        processor_context = wks_processor.ProcessorContext(mock_task_id, mock_task, None, None, {})
+        processor_context.record_collector = mock.MagicMock()
 
         sink = wks_processor.SinkProcessor('topic1')
         sink.initialise('test-sink', processor_context)
@@ -35,4 +35,4 @@ def test_sinkProcessorProcess():
 
         test_key, test_value = 'test-key', 'test-value'
         sink.process(test_key, test_value)
-        assert processor_context.recordCollector.called_with(test_key, test_value, _expected_timestamp)
+        assert processor_context.record_collector.called_with(test_key, test_value, _expected_timestamp)

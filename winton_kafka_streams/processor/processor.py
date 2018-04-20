@@ -56,4 +56,4 @@ class SinkProcessor(BaseProcessor):
         pass
 
     def _send(self, key, value, timestamp):
-        self.context.recordCollector.send(self.topic, key, value, timestamp)
+        self.context.record_collector.send(self.topic, key, value, timestamp)

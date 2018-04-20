@@ -32,7 +32,7 @@ class ChangeLoggingStateStore(StateStore[KT, VT]):
             def __init__(self, change_logger: StoreChangeLogger):
                 super(ChangeLoggingKeyValueStore, self).__init__()
                 self.change_logger: StoreChangeLogger = change_logger
-                self.inner_kv_store: KeyValueStateStore[KT, VT] = parent.inner_state_store
+                self.inner_kv_store: KeyValueStateStore[KT, VT] = parent.inner_state_store.get_key_value_store()
 
             def __len__(self) -> int:
                 return len(self.inner_kv_store)
@@ -54,4 +54,4 @@ class ChangeLoggingStateStore(StateStore[KT, VT]):
                 self.inner_kv_store.__delitem__(key)
                 self.change_logger.log_change(key_bytes, b'')
 
-        return ChangeLoggingKeyValueStore[KT, VT](self.change_logger, self.inner_state_store.get_key_value_store())
+        return ChangeLoggingKeyValueStore[KT, VT](self.change_logger)

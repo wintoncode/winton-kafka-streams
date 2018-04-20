@@ -16,14 +16,14 @@ class ProcessorContext(_context.Context):
     values to downstream processors.
 
     """
-    def __init__(self, _task_id, _task, _recordCollector, _state_stores):
+    def __init__(self, _task_id, _task, _record_collector, _state_record_collector, _state_stores):
 
-        super().__init__(_state_stores)
+        super().__init__(_state_record_collector, _state_stores)
 
         self.application_id = _task.application_id
         self.task_id = _task_id
         self.task = _task
-        self.recordCollector = _recordCollector
+        self.record_collector = _record_collector
 
     def commit(self):
         """
@@ -42,13 +42,13 @@ class ProcessorContext(_context.Context):
         Forward the key/value to the next node in the topology
 
         """
-        previousNode = self.currentNode
+        previous_node = self.current_node
         try:
-            for child in self.currentNode.children:
-                self.currentNode = child
+            for child in self.current_node.children:
+                self.current_node = child
                 child.process(key, value)
         finally:
-            self.currentNode = previousNode
+            self.current_node = previous_node
 
     def schedule(self, timestamp):
         """

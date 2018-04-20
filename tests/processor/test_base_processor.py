@@ -18,7 +18,7 @@ def test_initialiseBaseProcessor():
     mock_task = mock.Mock()
     mock_task.application_id = 'test_id'
     mock_task_id = TaskId('test_group', 0)
-    mock_context = ProcessorContext(mock_task_id, mock_task, None, {})
+    mock_context = ProcessorContext(mock_task_id, mock_task, None, None, {})
     bp = wks_processor.BaseProcessor()
     bp.initialise('my-name', mock_context)
 

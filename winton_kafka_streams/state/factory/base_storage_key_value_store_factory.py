@@ -1,7 +1,6 @@
 from typing import Generic, TypeVar
 
 from winton_kafka_streams.processor.serialization import Serde
-from winton_kafka_streams.state.logging.change_logging_key_value_store import ChangeLoggingKeyValueStore
 from abc import ABC, abstractmethod
 
 from winton_kafka_streams.state.state_store_supplier import StateStoreSupplier

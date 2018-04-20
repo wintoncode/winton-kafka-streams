@@ -1,8 +1,7 @@
-from typing import TypeVar
+from typing import TypeVar, Iterator
 
 from winton_kafka_streams.processor.serialization import Serde
 from ..key_value_state_store import KeyValueStateStore
-from ..logging.change_logging_key_value_store import ChangeLoggingKeyValueStore
 from ..state_store import StateStore
 from .store_change_logger import StoreChangeLogger
 
@@ -23,4 +22,36 @@ class ChangeLoggingStateStore(StateStore[KT, VT]):
         # TODO rebuild state into inner here
 
     def get_key_value_store(self) -> KeyValueStateStore[KT, VT]:
-        return ChangeLoggingKeyValueStore(self.change_logger, self.inner_state_store.get_key_value_store())
+        parent = self
+
+        class ChangeLoggingKeyValueStore(KeyValueStateStore[KT, VT]):
+            # TODO : add write buffer
+            # TODO : periodically dump full dict state to topic and change the
+            #        consumer offset so it need not read full history
+
+            def __init__(self, change_logger: StoreChangeLogger):
+                super(ChangeLoggingKeyValueStore, self).__init__()
+                self.change_logger: StoreChangeLogger = change_logger
+                self.inner_kv_store: KeyValueStateStore[KT, VT] = parent.inner_state_store
+
+            def __len__(self) -> int:
+                return len(self.inner_kv_store)
+
+            def __iter__(self) -> Iterator[KT]:
+                return self.inner_kv_store.__iter__()
+
+            def __setitem__(self, key: KT, value: VT):
+                key_bytes = parent.serialize_key(key)
+                value_bytes = parent.serialize_value(value)
+                self.inner_kv_store.__setitem__(key, value)
+                self.change_logger.log_change(key_bytes, value_bytes)
+
+            def __getitem__(self, key: KT) -> VT:
+                return self.inner_kv_store.__getitem__(key)
+
+            def __delitem__(self, key: KT):
+                key_bytes = parent.serialize_key(key)
+                self.inner_kv_store.__delitem__(key)
+                self.change_logger.log_change(key_bytes, b'')
+
+        return ChangeLoggingKeyValueStore[KT, VT](self.change_logger, self.inner_state_store.get_key_value_store())

@@ -146,7 +146,7 @@ class StreamThread:
 
             self.log.debug('Ending stream thread...')
         finally:
-            self.commit_all()
+            self.commit_all()  # TODO does this mean we update the consumer offset under a failure scenario?
             self.shutdown()
 
     def poll_requests(self, poll_timeout):

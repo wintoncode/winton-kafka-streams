@@ -22,6 +22,18 @@ class StateStore(ABC, Generic[KT, VT]):
     def name(self) -> str:
         return self._name
 
+    def serialize_key(self, key: KT) -> bytes:
+        return self._key_serde.serializer().serialize("", key)
+
+    def deserialize_key(self, data: bytes) -> KT:
+        return self._key_serde.deserializer().deserialize("", data)
+
+    def serialize_value(self, value: VT) -> bytes:
+        return self._value_serde.serializer().serialize("", value)
+
+    def deserialize_value(self, data: bytes) -> VT:
+        return self._value_serde.deserializer().deserialize("", data)
+
     @abstractmethod
     def initialize(self, context, root):
         """

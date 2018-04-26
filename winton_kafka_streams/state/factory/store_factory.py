@@ -8,7 +8,7 @@ KT = TypeVar('KT')  # Key type.
 
 
 class StoreFactory:
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.name: str = name
 
     def _with_key_serde(self, serde: Serde[KT]) -> ValueStoreFactory[KT]:

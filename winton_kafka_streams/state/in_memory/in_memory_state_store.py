@@ -1,4 +1,4 @@
-from typing import Iterator, TypeVar
+from typing import Iterator, TypeVar, MutableMapping
 
 from winton_kafka_streams.processor.serialization import Serde
 from ..key_value_state_store import KeyValueStateStore
@@ -9,11 +9,11 @@ VT = TypeVar('VT')  # Value type.
 
 
 class InMemoryStateStore(StateStore[KT, VT]):
-    def __init__(self,  name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool):
+    def __init__(self,  name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool) -> None:
         super().__init__(name, key_serde, value_serde, logging_enabled)
-        self.dict = {}
+        self.dict: MutableMapping[KT, VT] = {}
 
-    def initialize(self, context, root):
+    def initialize(self, context, root) -> None:
         pass
 
     def get_key_value_store(self) -> KeyValueStateStore[KT, VT]:
@@ -35,4 +35,4 @@ class InMemoryStateStore(StateStore[KT, VT]):
             def __iter__(self) -> Iterator[KT]:
                 return parent.dict.__iter__()
 
-        return InMemoryKeyValueStateStore[KT, VT]()
+        return InMemoryKeyValueStateStore()

@@ -49,22 +49,22 @@ class Context:
 
         pass
 
-    @property
+    @property  # type: ignore
     @_raiseIfNullRecord
     def offset(self):
         return self.current_record.offset()
 
-    @property
+    @property  # type: ignore
     @_raiseIfNullRecord
     def partition(self):
         return self.current_record.partition()
 
-    @property
+    @property  # type: ignore
     @_raiseIfNullRecord
     def timestamp(self):
         return self.current_record.timestamp()
 
-    @property
+    @property  # type: ignore
     @_raiseIfNullRecord
     def topic(self):
         return self.current_record.topic()

@@ -12,7 +12,7 @@ class StateStore(ABC, Generic[KT, VT]):
     """
     StateStores are created by Suppliers for use in StreamTasks
     """
-    def __init__(self, name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool):
+    def __init__(self, name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool) -> None:
         self.logging_enabled: bool = logging_enabled
         self._value_serde: Serde[VT] = value_serde
         self._key_serde: Serde[KT] = key_serde

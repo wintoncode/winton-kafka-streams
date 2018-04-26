@@ -22,6 +22,7 @@ import os
 import sys
 
 import javaproperties
+from typing import List
 
 from .processor.serialization.serdes import BytesSerde, serde_as_string
 from .errors.kafka_streams_error import KafkaStreamsError
@@ -125,7 +126,7 @@ A list of classes to use as metrics reporters
 Default: []
 Importance: Low
 """
-METRIC_REPORTERS = []
+METRIC_REPORTERS: List[str] = []
 
 """
 The number of samples maintained to compute metrics.

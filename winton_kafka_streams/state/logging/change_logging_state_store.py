@@ -11,7 +11,7 @@ VT = TypeVar('VT')  # Value type.
 
 class ChangeLoggingStateStore(StateStore[KT, VT]):
     def __init__(self,  name: str, key_serde: Serde[KT], value_serde: Serde[VT], logging_enabled: bool,
-                 inner_state_store: StateStore[KT, VT]):
+                 inner_state_store: StateStore[KT, VT]) -> None:
         super().__init__(name, key_serde, value_serde, logging_enabled)
         self.inner_state_store = inner_state_store
         self.change_logger = None
@@ -29,7 +29,7 @@ class ChangeLoggingStateStore(StateStore[KT, VT]):
             # TODO : periodically dump full dict state to topic and change the
             #        consumer offset so it need not read full history
 
-            def __init__(self, change_logger: StoreChangeLogger):
+            def __init__(self, change_logger: StoreChangeLogger) -> None:
                 super(ChangeLoggingKeyValueStore, self).__init__()
                 self.change_logger: StoreChangeLogger = change_logger
                 self.inner_kv_store: KeyValueStateStore[KT, VT] = parent.inner_state_store.get_key_value_store()
@@ -54,4 +54,4 @@ class ChangeLoggingStateStore(StateStore[KT, VT]):
                 self.inner_kv_store.__delitem__(key)
                 self.change_logger.log_change(key_bytes, b'')
 
-        return ChangeLoggingKeyValueStore[KT, VT](self.change_logger)
+        return ChangeLoggingKeyValueStore(self.change_logger)

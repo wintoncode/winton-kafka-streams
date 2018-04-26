@@ -9,7 +9,7 @@ VT = TypeVar('VT')  # Value type.
 
 
 class ValueStoreFactory(Generic[KT]):
-    def __init__(self, name: str, key_serde: Serde[KT]):
+    def __init__(self, name: str, key_serde: Serde[KT]) -> None:
         self.name: str = name
         self.key_serde: Serde[KT] = key_serde
 

@@ -9,7 +9,7 @@ VT = TypeVar('VT')  # Value type.
 
 
 class InMemoryKeyValueStoreFactory(BaseStorageKeyValueStoreFactory[KT, VT]):
-    def __init__(self, name: str, key_serde: Serde[KT], value_serde: Serde[VT]):
+    def __init__(self, name: str, key_serde: Serde[KT], value_serde: Serde[VT]) -> None:
         super(InMemoryKeyValueStoreFactory, self).__init__(name, key_serde, value_serde)
 
     def build(self) -> InMemoryStateStoreSupplier:

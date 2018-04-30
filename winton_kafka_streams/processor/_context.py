@@ -5,6 +5,7 @@ Processor context is the link to kafka from individual processor objects
 
 import functools
 import logging
+from typing import Any, Callable
 
 from winton_kafka_streams.state.key_value_state_store import KeyValueStateStore
 from ..errors.kafka_streams_error import KafkaStreamsError
@@ -12,7 +13,7 @@ from ..errors.kafka_streams_error import KafkaStreamsError
 log = logging.getLogger(__name__)
 
 
-def _raiseIfNullRecord(fn):
+def _raise_if_null_record(fn: Callable[..., Any]) -> Callable[..., Any]:
     @functools.wraps(fn)
     def _inner(*args, **kwargs):
         if args[0].current_record is None:
@@ -49,23 +50,23 @@ class Context:
 
         pass
 
-    @property  # type: ignore
-    @_raiseIfNullRecord
+    @property  # type: ignore # waiting on https://github.com/python/mypy/issues/1362
+    @_raise_if_null_record
     def offset(self):
         return self.current_record.offset()
 
     @property  # type: ignore
-    @_raiseIfNullRecord
+    @_raise_if_null_record
     def partition(self):
         return self.current_record.partition()
 
     @property  # type: ignore
-    @_raiseIfNullRecord
+    @_raise_if_null_record
     def timestamp(self):
         return self.current_record.timestamp()
 
     @property  # type: ignore
-    @_raiseIfNullRecord
+    @_raise_if_null_record
     def topic(self):
         return self.current_record.topic()
 

@@ -5,8 +5,12 @@ Base class for deserializer implementations
 
 import abc
 
+from typing import TypeVar, Generic
 
-class Deserializer(metaclass=abc.ABCMeta):
+T = TypeVar('T')
+
+
+class Deserializer(Generic[T], metaclass=abc.ABCMeta):
     """
     Configure this deserializer.
 
@@ -22,19 +26,19 @@ class Deserializer(metaclass=abc.ABCMeta):
         pass
 
     """
-    Convert a bytearray into typed data.
+    Convert a bytes into typed data.
     
     Parameters:
     -----------
     topic : string
-    data : bytearray
+    data : bytes
     
     Returns:
     --------
     deserialized_data : typed data
     """
     @abc.abstractmethod
-    def deserialize(self, topic, data):
+    def deserialize(self, topic: str, data: bytes) -> T:
         pass
 
     """

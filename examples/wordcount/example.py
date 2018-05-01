@@ -12,9 +12,10 @@ import time
 import winton_kafka_streams.kafka_config as kafka_config
 import winton_kafka_streams.kafka_streams as kafka_streams
 from winton_kafka_streams.processor import BaseProcessor, TopologyBuilder
-from winton_kafka_streams.state import InMemoryKeyValueStore, ChangeLoggingKeyValueStore
+import winton_kafka_streams.state as state_stores
 
 log = logging.getLogger(__name__)
+
 
 # An example implementation of word count,
 # showing where punctuate can be useful
@@ -49,12 +50,17 @@ def run(config_file, binary_output):
     if binary_output:
         kafka_config.VALUE_SERDE = 'examples.wordcount.custom_serde.StringIntSerde'
 
-    count_store = lambda name: ChangeLoggingKeyValueStore(name, InMemoryKeyValueStore)
+    count_store = state_stores.create('counts'). \
+        with_string_keys(). \
+        with_integer_values(). \
+        in_memory(). \
+        build()
+
     with TopologyBuilder() as topology_builder:
         topology_builder. \
             source('input-value', ['wks-wordcount-example-topic']). \
             processor('count', WordCount, 'input-value'). \
-            state_store('counts', count_store, 'count'). \
+            state_store(count_store, 'count'). \
             sink('output-count', 'wks-wordcount-example-count', 'count')
 
     wks = kafka_streams.KafkaStreams(topology_builder, kafka_config)

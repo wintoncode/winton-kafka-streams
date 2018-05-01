@@ -5,8 +5,12 @@ Base class for serializer implementations
 
 import abc
 
+from typing import TypeVar, Generic
 
-class Serializer(metaclass=abc.ABCMeta):
+T = TypeVar('T')
+
+
+class Serializer(Generic[T], metaclass=abc.ABCMeta):
     """
     Configure this serializer.
 
@@ -22,7 +26,7 @@ class Serializer(metaclass=abc.ABCMeta):
         pass
 
     """
-    Convert typed data into a bytearray.
+    Convert typed data into a bytes.
     
     Parameters:
     -----------
@@ -31,10 +35,10 @@ class Serializer(metaclass=abc.ABCMeta):
     
     Returns:
     --------
-    serialized_bytearray : bytearray
+    serialized_bytearray : bytes
     """
     @abc.abstractmethod
-    def serialize(self, topic, data):
+    def serialize(self, topic: str, data: T) -> bytes:
         pass
 
     """

@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     export SCALA_VER=2.11
-    export KAFKA_VER=0.11.0.1
+    export KAFKA_VER=1.0.0
     export KAFKA_PACKAGE=kafka_${SCALA_VER}-${KAFKA_VER}
 
     apt-get update

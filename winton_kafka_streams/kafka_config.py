@@ -22,6 +22,7 @@ import os
 import sys
 
 import javaproperties
+from typing import List
 
 from .processor.serialization.serdes import BytesSerde, serde_as_string
 from .errors.kafka_streams_error import KafkaStreamsError
@@ -125,7 +126,7 @@ A list of classes to use as metrics reporters
 Default: []
 Importance: Low
 """
-METRIC_REPORTERS = []
+METRIC_REPORTERS: List[str] = []
 
 """
 The number of samples maintained to compute metrics.
@@ -252,7 +253,7 @@ KEY_DESERIALIZER_ERROR = None
 VALUE_SERIALIZER_ERROR = None
 VALUE_DESERIALIZER_ERROR = None
 
-# IntegerSerde - byte order
+# IntegerSerde/LongSerde - byte order
 SERIALIZER_BYTEORDER = 'little'
 DESERIALIZER_BYTEORDER = 'little'
 KEY_SERIALIZER_BYTEORDER = None
@@ -260,18 +261,13 @@ KEY_DESERIALIZER_BYTEORDER = None
 VALUE_SERIALIZER_BYTEORDER = None
 VALUE_DESERIALIZER_BYTEORDER = None
 
-# IntegerSerde - signed integer
+# IntegerSerde/LongSerde - signed integer
 SERIALIZER_SIGNED = 'true'
 DESERIALIZER_SIGNED = 'true'
 KEY_SERIALIZER_SIGNED = None
 KEY_DESERIALIZER_SIGNED = None
 VALUE_SERIALIZER_SIGNED = None
 VALUE_DESERIALIZER_SIGNED = None
-
-# IntegerSerde - int size in bytes
-SERIALIZER_INT_SIZE = 4
-KEY_SERIALIZER_INT_SIZE = None
-VALUE_SERIALIZER_INT_SIZE = None
 
 # AvroSerde
 AVRO_SCHEMA_REGISTRY = None

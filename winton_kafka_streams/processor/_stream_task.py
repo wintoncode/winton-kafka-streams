@@ -4,6 +4,7 @@ import queue
 from confluent_kafka import TopicPartition
 from confluent_kafka.cimpl import KafkaException, KafkaError
 
+from winton_kafka_streams.processor.serialization.serdes import BytesSerde
 from ..errors._kafka_error_codes import _get_invalid_producer_epoch_code
 from ._punctuation_queue import PunctuationQueue
 from ._record_collector import RecordCollector
@@ -57,6 +58,7 @@ class StreamTask:
         self.application_id = _application_id
         self.partitions = _partitions
         self.topology = _topology_builder.build()
+        self.state_stores = {name: store.get() for name, store in self.topology.state_stores.items()}
         self.consumer = _consumer
         self.producer = _producer
         self.config = _config
@@ -66,11 +68,12 @@ class StreamTask:
         self.value_serde = serde_from_string(self.config.VALUE_SERDE)
         self.value_serde.configure(self.config, False)
 
-        self.recordCollector = RecordCollector(self.producer, self.key_serde, self.value_serde)
+        self.record_collector = RecordCollector(self.producer, self.key_serde, self.value_serde)
+        self.state_record_collector = RecordCollector(self.producer, BytesSerde(), BytesSerde())
 
         self.queue = queue.Queue()
-        self.context = ProcessorContext(self.task_id, self,
-                self.recordCollector, self.topology.state_stores)
+        self.context = ProcessorContext(self.task_id, self, self.record_collector,
+                                        self.state_record_collector, self.state_stores)
 
         self.punctuation_queue = PunctuationQueue(self.punctuate)
         # TODO: use the configured timestamp extractor.
@@ -86,17 +89,17 @@ class StreamTask:
 
     def _init_state_stores(self):
         self.log.debug(f'Initialising state stores')
-        for store in self.topology.state_stores.values():
-            store.initialise(self.context, store)
+        for store in self.state_stores.values():
+            store.initialize(self.context, store)
 
     def _init_topology(self, context):
         for node in self.topology.nodes.values():
             try:
-                context.currentNode = node
+                context.current_node = node
                 node.initialise(context)
             finally:
-                context.currentNode = None
-                context.currentRecord = None
+                context.current_node = None
+                context.current_record = None
 
     def add_records(self, records):
         for record in records:
@@ -107,7 +110,7 @@ class StreamTask:
             return False
 
         record = self.queue.get()
-        self.context.currentRecord = record
+        self.context.current_record = record
         self.current_timestamp = self.timestamp_extractor.extract(record, self.current_timestamp)
 
         topic = record.topic()
@@ -115,14 +118,14 @@ class StreamTask:
         key = None if raw_key is None else self.key_serde.deserializer.deserialize(topic, record.key())
         value = self.value_serde.deserializer.deserialize(topic, record.value())
 
-        self.context.currentNode = self.topology.sources[topic]
+        self.context.current_node = self.topology.sources[topic]
         self.topology.sources[topic].process(key, value)
 
         self.consumedOffsets[(topic, record.partition())] = record.offset()
         self.commitOffsetNeeded = True
 
-        self.context.currentRecord = None
-        self.context.currentNode = None
+        self.context.current_record = None
+        self.context.current_node = None
 
         return True
 
@@ -136,15 +139,15 @@ class StreamTask:
 
     def punctuate(self, node, timestamp):
         self.log.debug(f'Punctuating processor {node} at {timestamp}')
-        self.context.currentRecord = DummyRecord(timestamp)
-        self.context.currentNode = node
+        self.context.current_record = DummyRecord(timestamp)
+        self.context.current_node = node
         node.punctuate(timestamp)
-        self.context.currentRecord = None
-        self.context.currentNode = None
+        self.context.current_record = None
+        self.context.current_node = None
 
     def commit(self):
         try:
-            self.recordCollector.flush()
+            self.record_collector.flush()
             self.commit_offsets()
             self.commitRequested = False
         except Exception as e:
@@ -178,7 +181,7 @@ class StreamTask:
         self.commitRequested = True
 
     def schedule(self, interval):
-        self.punctuation_queue.schedule(self.context.currentNode, interval)
+        self.punctuation_queue.schedule(self.context.current_node, interval)
 
     def __repr__(self):
         return self.__class__.__name__ + f":{self.task_id}"

@@ -1,6 +1,6 @@
-from .string import StringSerializer, StringDeserializer
-from ._deserializer import Deserializer
-from ._serializer import Serializer
+from ._string import StringSerializer, StringDeserializer
+from .deserializer import Deserializer
+from .serializer import Serializer
 import json
 
 

@@ -1,8 +1,6 @@
-"""
-import state will import all possible pre-defined state classes
+from winton_kafka_streams.state.factory.store_factory import StoreFactory
 
-"""
 
-from .simple import SimpleStore
-from .in_memory_key_value_store import InMemoryKeyValueStore
-from .change_logging_key_value_store import ChangeLoggingKeyValueStore
+def create(name: str) -> StoreFactory:
+    # TODO replace this Java-esque factory with a Pythonic DSL as part of the other work on a Streams DSL
+    return StoreFactory(name)

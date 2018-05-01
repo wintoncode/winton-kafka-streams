@@ -81,8 +81,7 @@ class KafkaStreams:
         def __str__(self):
             return self.name
 
-    def __init__(self, topology, kafka_config):
-        self.topology = topology
+    def __init__(self, topology_builder, kafka_config):
         self.kafka_config = kafka_config
 
         self.state = self.State.CREATED
@@ -91,8 +90,8 @@ class KafkaStreams:
 
         self.consumer = None
 
-        self.stream_threads = [StreamThread(topology, kafka_config, KafkaClientSupplier(self.kafka_config))
-                               for i in range(int(self.kafka_config.NUM_STREAM_THREADS))]
+        self.stream_threads = [StreamThread(topology_builder, self.kafka_config, KafkaClientSupplier(self.kafka_config))
+                               for _ in range(int(self.kafka_config.NUM_STREAM_THREADS))]
         for stream_thread in self.stream_threads:
             stream_thread.set_state_listener(self.on_thread_state_change)
             self.thread_states[stream_thread.thread_id()] = stream_thread.state

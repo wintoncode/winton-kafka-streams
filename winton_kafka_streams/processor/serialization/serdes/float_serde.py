@@ -2,11 +2,11 @@
 Float Serde
 
 """
-from ..float import FloatDeserializer, FloatSerializer
+from .._float import FloatDeserializer, FloatSerializer
 from .wrapper_serde import WrapperSerde
 
 
-class FloatSerde(WrapperSerde):
+class FloatSerde(WrapperSerde[float]):
     def __init__(self):
         serializer = FloatSerializer()
         deserializer = FloatDeserializer()

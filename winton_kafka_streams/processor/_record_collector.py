@@ -45,8 +45,7 @@ class RecordCollector:
                 log.exception(nie)
                 produced = True  # should not enter infinite loop
 
-    @staticmethod
-    def on_delivery(err, msg):
+    def on_delivery(self, err, msg):
         """
         Callback function after a value is output to a source.
 

@@ -1,6 +1,6 @@
 from .serde import extract_config_property
-from ._deserializer import Deserializer
-from ._serializer import Serializer
+from .deserializer import Deserializer
+from .serializer import Serializer
 
 
 class IntegerSerializer(Serializer[int]):

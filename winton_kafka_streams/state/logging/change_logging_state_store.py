@@ -26,8 +26,7 @@ class ChangeLoggingStateStore(StateStore[KT, VT]):
 
         class ChangeLoggingKeyValueStore(KeyValueStateStore[KT, VT]):
             # TODO : add write buffer
-            # TODO : periodically dump full dict state to topic and change the
-            #        consumer offset so it need not read full history
+            # TODO : use topic compaction to optimise state-rebuilding
 
             def __init__(self, change_logger: StoreChangeLogger) -> None:
                 super(ChangeLoggingKeyValueStore, self).__init__()

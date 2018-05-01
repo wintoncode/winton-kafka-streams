@@ -23,7 +23,6 @@ class StateStore(ABC, Generic[KT, VT]):
         return self._name
 
     def serialize_key(self, key: KT) -> bytes:
-        return None
         return self._key_serde.serializer.serialize("", key)
 
     def deserialize_key(self, data: bytes) -> KT:

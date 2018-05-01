@@ -7,8 +7,8 @@ import abc
 
 from typing import TypeVar, Generic
 
-from ._deserializer import Deserializer
-from ._serializer import Serializer
+from .deserializer import Deserializer
+from .serializer import Serializer
 
 T = TypeVar('T')
 TSer = TypeVar('TSer')

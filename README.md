@@ -45,8 +45,7 @@ required for development.
 You may need to do this using `sudo` on Linux.
 
 If you want to install the code and get a feel for it as a user then
-we recommend using pip install which will pull the package from PyPI
-or your local mirror.
+we recommend using `pip install git+https://github.com/wintoncode/winton-kafka-streams`.
 
 ### Running tests
 Tests will run when py.test is called in the root of the repository.
